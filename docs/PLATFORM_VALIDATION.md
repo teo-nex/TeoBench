@@ -33,3 +33,9 @@ Exactly **two** model requests, no transport failures. The checkpoint has 2 reco
 - Updating OS execution changes the grader digest. Historical report metadata remains intact and readable, revalidation identifies the current grader, unknown hashes are rejected, and appending current trials to an old grader checkpoint is blocked.
 
 Linux support incorporates contributor [PR #3](https://github.com/teo-nex/TeoBench/pull/3). Host SSH, NetBird, firewall and security policy were not changed. The hosted Windows CI job checks the native control plane and container command/cleanup policy; full Linux-container integration was verified on the Windows development host, rather than claimed for a Windows-only hosted Docker engine.
+
+## Native Ubuntu PC2 hotfix
+
+The native Ubuntu 24.04.4 host denied Bubblewrap network setup under AppArmor (`unprivileged_userns`, `net_admin`/`setpcap`). The Linux grader now automatically uses an existing local Docker daemon and the pinned local Python 3.13 image when Bubblewrap initialization fails. No package installation, image download, network/security setting change or model inference was performed on this host.
+
+The actual native-host check passed C01 (50/50), S01 (12/12), temporary study create/record/validate (2 records, both PASS), nine sandbox/cleanup tests, and an actual wall-timeout cleanup with no orphan containers. AppArmor's unprivileged-userns restriction remained enabled. This is a technical reference-answer smoke; it does not establish model quality or a completed campaign. Windows support and its separate pinned image are preserved.

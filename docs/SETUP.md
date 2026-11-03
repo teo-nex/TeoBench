@@ -37,7 +37,7 @@ python3 -m unittest discover -s tests -v
 python3 -m teobench campaign plan
 ```
 
-On Debian/Ubuntu, Bubblewrap is normally installed with `sudo apt-get install bubblewrap`. Reuse it when present. An agent must respect the host's package-install authorization. If user namespaces or Bubblewrap flags are prohibited/unavailable, report BLOCKED. Do not disable AppArmor, change sysctl/security settings, use a privileged container, or run Python answers without the sandbox. The CI workflow's disposable GitHub-hosted Ubuntu policy is not an instruction for participant machines.
+On Debian/Ubuntu, Bubblewrap is normally installed with `sudo apt-get install bubblewrap`. Reuse it when present. An agent must respect the host's package-install authorization. If user namespaces or Bubblewrap flags are prohibited/unavailable, the grader tries the already configured local Docker socket and pinned local Python image described in [PROTOCOL.md](PROTOCOL.md). It never pulls that image on Linux. If neither sandbox is ready, report BLOCKED. Do not disable AppArmor, change sysctl/security settings, use a privileged container, or run Python answers without the sandbox. The CI workflow's disposable GitHub-hosted Ubuntu policy is not an instruction for participant machines.
 
 ## Run the actual study
 
