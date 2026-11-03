@@ -7,7 +7,7 @@ PATH = Path(__file__).resolve().parent.parent / 'Easy-Bench' / 'campaign.json'
 
 
 def plan():
-    config = json.loads(PATH.read_text())
+    config = json.loads(PATH.read_text(encoding="utf-8-sig"))
     jobs = []
     for phase in ['pilot', 'primary', 'controls']:
         stage = config[phase]

@@ -27,7 +27,13 @@ python3 -m teobench campaign status --file local-runs/study.json
 
 ## Быстрый старт
 
-Python 3.9+, стандартная библиотека; установка пакетов и ключи API не нужны. Проверка Python-ответов требует **macOS с `/usr/bin/sandbox-exec`** и интерпретатор, установленный вне `/Users` и `/Volumes`. На других ОС оценщик Python намеренно не запускает код без изоляции.
+Python 3.9+ и стандартная библиотека; пакеты Python и ключи API не нужны. Для проверки Python-ответов дополнительно требуется один из вариантов:
+
+- **macOS:** `/usr/bin/sandbox-exec` и интерпретатор, установленный вне `/Users` и `/Volumes`.
+- **Windows 10/11:** обычный Windows Python и работающий [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) с Linux engine. Один раз выполните `py -3 -m teobench doctor --prepare`, чтобы получить закреплённый официальный образ Python. Windows CLI не требует Bash, WSL-команд и модуля `resource`.
+- **Linux:** [Bubblewrap](https://github.com/containers/bubblewrap) (`bwrap` с поддержкой `--disable-userns`), разрешённые непривилегированные user/network namespaces и интерпретатор, чей реальный исполняемый файл находится в `/usr`. Установите Bubblewrap менеджером пакетов дистрибутива (например, `sudo apt-get install bubblewrap`). Checkout и домашний каталог должны находиться вне `/usr`, `/lib` и `/lib64`.
+
+Linux sandbox открывает только системные каталоги runtime для чтения, скрывает домашний каталог, checkout, временные файлы хоста и `/proc`, изолирует сеть, процессы и окружение. При отсутствии или запрете изоляции оценщик отказывает в запуске; небезопасного fallback нет. На Windows worker запускается в одноразовом Linux-контейнере без каталогов хоста и сети, с корнем только для чтения, непривилегированным пользователем и ограничениями CPU, памяти и процессов. На остальных ОС исполнение Python пока не поддерживается.
 
 ```bash
 git clone https://github.com/teo-nex/TeoBench.git
@@ -37,6 +43,17 @@ python3 -m teobench list
 python3 -m teobench show R01
 python3 -m unittest discover -s tests -v
 ```
+
+В **Windows PowerShell** используйте Python launcher из каталога репозитория:
+
+```powershell
+py -3 -m teobench doctor --prepare
+py -3 -m teobench verify
+py -3 -m teobench campaign plan
+py -3 -m unittest discover -s tests -v
+```
+
+На **macOS/Linux** сначала выполните `python3 -m teobench doctor`. Подробности: [настройка по ОС](docs/SETUP.md). `doctor` проверяет изоляцию grader; доступ ко всем 35 сочетаниям модель/effort агент проверяет отдельно. Настройка использует установленные инструменты и не меняет безопасность или сеть хоста.
 
 Полученный ответ можно проверить отдельно:
 
@@ -80,3 +97,5 @@ python3 -m teobench study submit --file local-runs/study.json --publish
 GitHub проверяет структуру отчётов и заново оценивает ответы доверенным кодом базовой ветки. Только полные запуски попадают в сводку; точные копии наборов ответов исключаются. Идентичность серверной модели, честность истории инструментов и отсутствие доступа к эталонам остаются заявлениями автора исследования. Эти данные не являются независимой аттестацией провайдера или репрезентативной выборкой всех пользователей.
 
 Эталоны опубликованы для воспроизводимости: Easy-Bench больше не скрытый holdout. Внутренние исходные метки `easy/medium/hard` сохранены, но весь старый набор относится к уровню TeoBench **Easy**. [Происхождение и контрольные суммы](Easy-Bench/tasks/PROVENANCE.json). Лицензия — [MIT](LICENSE).
+
+[Проверка на Windows, Linux и Mac](docs/PLATFORM_VALIDATION.md): совместимость ОС и пробный запуск только двух заданий.

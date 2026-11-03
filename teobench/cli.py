@@ -14,12 +14,12 @@ EASY = ROOT / "Easy-Bench" / "tasks"
 
 
 def load():
-    manifest = json.loads((EASY / "manifest.json").read_text())
+    manifest = json.loads((EASY / "manifest.json").read_text(encoding="utf-8-sig"))
     for name, key in [("tasks.jsonl", "public_sha256"), ("answers.json", "sealed_sha256")]:
         if hashlib.sha256((EASY / name).read_bytes()).hexdigest() != manifest[key]:
             raise ValueError("dataset_hash_mismatch: " + name)
-    tasks = [json.loads(line) for line in (EASY / "tasks.jsonl").read_text().splitlines()]
-    return tasks, json.loads((EASY / "answers.json").read_text()), manifest
+    tasks = [json.loads(line) for line in (EASY / "tasks.jsonl").read_text(encoding="utf-8-sig").splitlines()]
+    return tasks, json.loads((EASY / "answers.json").read_text(encoding="utf-8-sig")), manifest
 
 
 def verify():
@@ -30,7 +30,7 @@ def verify():
     generated_tasks, generated_answers = module.build()
     if generated_tasks != tasks or generated_answers != answers:
         raise ValueError("generator_does_not_reproduce_frozen_dataset")
-    receipt = json.loads((EASY / "PROVENANCE.json").read_text())
+    receipt = json.loads((EASY / "PROVENANCE.json").read_text(encoding="utf-8-sig"))
     for relative, expected in receipt["published_files_sha256"].items():
         if hashlib.sha256((EASY / relative).read_bytes()).hexdigest() != expected:
             raise ValueError("provenance_hash_mismatch: " + relative)
@@ -49,8 +49,13 @@ def emit(value):
 
 
 def main(argv=None):
+    import sys
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="TeoBench Easy — offline benchmark inspection and grading")
     sub = parser.add_subparsers(dest="command", required=True)
+    doctor = sub.add_parser("doctor", help="check OS sandbox; Windows uses an existing Linux Docker engine")
+    doctor.add_argument("--prepare", action="store_true", help="on Windows, explicitly pull the pinned Python sandbox image")
     sub.add_parser("verify", help="check hashes and regenerate all 30 original tasks in memory")
     listing = sub.add_parser("list", help="list original task IDs and titles")
     listing.add_argument("--family", choices=["reasoning", "code", "sql", "data", "tools"])
@@ -97,6 +102,10 @@ def main(argv=None):
     stats.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
     try:
+        if args.command == "doctor":
+            from .sandbox import doctor
+            emit(doctor(args.prepare))
+            return 0
         if args.command == "campaign":
             from . import campaign, studies
             if args.action == "plan":
@@ -131,7 +140,7 @@ def main(argv=None):
                 value = studies.load_json(args.file)
                 studies.validate(value, regrade=False)
                 history = studies.load_json(args.history) if args.history else []
-                studies.add_record(value, args.task, args.model, args.effort, args.answer.read_text(), history,
+                studies.add_record(value, args.task, args.model, args.effort, args.answer.read_text(encoding="utf-8-sig"), history,
                     args.replicate, args.seconds, args.transport_error)
                 studies.save(args.file, value)
                 emit(studies.validate(value, regrade=False))
@@ -149,7 +158,7 @@ def main(argv=None):
                 fields = ["model", "effort", "access_route", "environment", "grader_sha256",
                           "studies", "runs", "task_results", "median_pass_rate", "mean_pass_rate",
                           "min_pass_rate", "max_pass_rate", "transport_errors"]
-                with args.output.with_suffix(".csv").open("w", newline="") as handle:
+                with args.output.with_suffix(".csv").open("w", newline="", encoding="utf-8") as handle:
                     writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
                     writer.writeheader()
                     writer.writerows(report["groups"])
@@ -175,12 +184,12 @@ def main(argv=None):
                 raise ValueError("lookup_only_available_for_tools_tasks")
             emit(answers[task["id"]]["catalog"][args.id])
             return 0
-        history = json.loads(args.history.read_text()) if args.history else []
+        history = json.loads(args.history.read_text(encoding="utf-8-sig")) if args.history else []
         if not isinstance(history, list):
             raise ValueError("history_must_be_an_array")
-        result = grade(task, args.answer.read_text(), answers[task["id"]], history)
+        result = grade(task, args.answer.read_text(encoding="utf-8-sig"), answers[task["id"]], history)
         emit(result)
         return 0 if result["semantic_pass"] else 1
-    except (ValueError, KeyError, OSError) as error:
+    except (ValueError, KeyError, OSError, RuntimeError) as error:
         emit({"error": str(error)})
         return 2

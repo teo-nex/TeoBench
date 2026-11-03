@@ -33,6 +33,7 @@ class CampaignTests(unittest.TestCase):
 
     def test_one_condition_cannot_be_claimed_or_submitted_as_full_study(self):
         partial=copy.deepcopy(self.primary)
+        partial['benchmark']['grader_sha256']=studies.grader_digest()
         first=partial['records'][0]
         partial['records']=[r for r in partial['records'] if (r['model'],r['effort'])==(first['model'],first['effort'])]
         self.assertEqual(len(partial['records']),30)

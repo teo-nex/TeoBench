@@ -16,8 +16,11 @@ The default research is **7 models × 5 reasoning efforts × 30 unchanged tasks 
 
 > Read AGENTS.md and Easy-Bench/campaign.json. Reproduce the full seven-model reasoning-effort study: 1050 primary trials across all 35 model/effort conditions, plus the defined 35 pilot and 42 control trials. Use my configured model interfaces, preserve exact IDs and efforts, persist progress, and resume missing trials. Do not stop at 30 tasks or evaluate only your current model. If any required route or effort is unavailable, report BLOCKED without substitution. After completion, show the results and offer to submit the study to TeoBench; publish only with my consent.
 
+A user may explicitly request a narrow smoke test (for example, two real tasks) to check OS setup. Keep it local and label it partial; it does not satisfy campaign completion or submission.
+
 ## Execution order
 
+0. Detect the OS and follow [SETUP.md](SETUP.md). Require a passing `doctor` before inference. Replace `python3` below with `py -3` on Windows; use PowerShell syntax instead of Bash continuation.
 1. Inspect `python3 -m teobench campaign plan`. Use `python3 -m teobench campaign next --file local-runs/study.json` to obtain each missing trial with its exact model/effort and model-facing task; execute it and record the answer, then repeat. Confirm access to all 35 model/effort combinations using the user's configured interfaces. These are exact model identifiers from the source study; they are not a promise that every provider/account exposes them. Never silently substitute models/efforts or label unavailable routes completed.
 2. Create a local report as shown in the root README. Complete **35 pilot trials**, high effort, task IDs R01/C04/S03/D06/T01, all seven models, `--replicate 1`.
 3. Complete **1050 primary trials**, every task, every model and all five efforts, `--replicate 0`. Each task must be a fresh independent trial; tool calls within a trial remain sequential. Retain every answer and transport failure.

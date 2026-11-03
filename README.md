@@ -27,7 +27,13 @@ python3 -m teobench campaign status --file local-runs/study.json
 
 ## Quick start
 
-Python 3.9+ and the standard library are sufficient for the inspection and grading CLI; no packages or API keys are required. Grading Python answers requires **macOS with `/usr/bin/sandbox-exec`** and a Python interpreter installed outside `/Users` and `/Volumes`. On other operating systems, the Python grader refuses to execute code without isolation.
+Python 3.9+ and the standard library are sufficient for the inspection and grading CLI; no Python packages or API keys are required. Grading Python answers additionally requires one of:
+
+- **macOS:** `/usr/bin/sandbox-exec` and a Python interpreter installed outside `/Users` and `/Volumes`.
+- **Windows 10/11:** native Windows Python plus a running [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) Linux engine. Run `py -3 -m teobench doctor --prepare` once to fetch the pinned official Python image. No WSL command, Bash, `resource` module or POSIX path is required in the Windows CLI.
+- **Linux:** [Bubblewrap](https://github.com/containers/bubblewrap) (`bwrap`, with `--disable-userns` support), permitted unprivileged user/network namespaces, and a Python interpreter whose resolved executable is under `/usr`. Install Bubblewrap with your distribution's package manager (for example, `sudo apt-get install bubblewrap`). The checkout and home directory must be outside `/usr`, `/lib`, and `/lib64`.
+
+The Linux sandbox exposes only read-only system runtime directories, with no host home, checkout, temporary files or `/proc`, and isolates the network, processes and environment. If isolation is unavailable or prohibited by the host, grading fails closed; no unconfined fallback is used. On Windows, the worker runs inside a disposable Linux container with no host mounts, no network, a read-only root, an unprivileged user, dropped capabilities, and CPU/memory/process limits. The Python worker stays isolated from the Windows checkout and credentials. Other operating systems remain unsupported for Python execution.
 
 ```bash
 git clone https://github.com/teo-nex/TeoBench.git
@@ -37,6 +43,17 @@ python3 -m teobench list
 python3 -m teobench show R01
 python3 -m unittest discover -s tests -v
 ```
+
+On **Windows PowerShell**, use the Python launcher and run the same commands from the checkout:
+
+```powershell
+py -3 -m teobench doctor --prepare
+py -3 -m teobench verify
+py -3 -m teobench campaign plan
+py -3 -m unittest discover -s tests -v
+```
+
+On **macOS/Linux**, run `python3 -m teobench doctor` before inference. See [OS setup and troubleshooting](docs/SETUP.md). `doctor` checks grading isolation, not model access. The agent must then verify all 35 model/effort conditions separately. Setup reuses installed tools; it does not change host security or network policy.
 
 Grade an individual answer:
 
@@ -80,3 +97,5 @@ Submission requires an authenticated [GitHub CLI](https://cli.github.com/). With
 GitHub validates report structure and regrades answers using trusted base-branch code. Only complete runs enter the aggregate statistics; exact duplicate response sets are excluded. Server-side model identity, tool-history authenticity and lack of access to reference answers remain claims made by the study author. These reports are neither independent provider attestations nor a representative sample of all users.
 
 Reference answers are public for reproducibility, so Easy-Bench is no longer a hidden holdout. The original internal `easy/medium/hard` labels are retained, but the entire original set belongs to the TeoBench **Easy** tier. See [provenance and checksums](Easy-Bench/tasks/PROVENANCE.json). Licensed under [MIT](LICENSE).
+
+[Platform validation](docs/PLATFORM_VALIDATION.md): OS compatibility checks and an explicitly limited two-task smoke test.

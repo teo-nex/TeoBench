@@ -26,20 +26,22 @@ SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:gh[pousr]_[A-Za-z0
 def grader_digest():
     root = Path(__file__).resolve().parent
     digest = hashlib.sha256()
-    for name in ["evaluate.py", "code_worker.py"]:
+    for name in ["evaluate.py", "code_worker.py", "sandbox.py"]:
         digest.update(name.encode()+b"\0"+(root/name).read_bytes())
     return digest.hexdigest()
 
 
 def reject_secrets(value):
-    if SECRET.search(json.dumps(value, ensure_ascii=False)):
+    encoded = json.dumps(value, ensure_ascii=False)
+    windows_home = re.search(r"[A-Za-z]:\\\\(?:Users|Documents and Settings)\\\\[^\\]+\\\\", encoded, re.I)
+    if SECRET.search(encoded) or windows_home:
         raise ValueError("possible_secret_or_private_home_path: inspect and remove before publishing")
 
 
 def save(path, value):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False)+"\n")
+    path.write_bytes((json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False)+"\n").encode("utf-8"))
 
 
 def strict_object(value, keys, context):
@@ -63,7 +65,7 @@ def load_json(path):
                 raise ValueError("duplicate_json_key")
             result[key] = val
         return result
-    return json.loads(path.read_text(), object_pairs_hook=pairs,
+    return json.loads(path.read_text(encoding="utf-8-sig"), object_pairs_hook=pairs,
                       parse_constant=lambda value: (_ for _ in ()).throw(ValueError("non_finite_json")))
 
 
@@ -90,6 +92,8 @@ def create(study_id, access_route, environment):
 def add_record(study, task_id, model, effort, answer, history, replicate=0,
                elapsed_seconds=None, transport_error=None):
     from .cli import load
+    if study.get("benchmark", {}).get("grader_sha256") != grader_digest():
+        raise ValueError("checkpoint_grader_changed_do_not_mix_execution_versions")
     tasks, answers, _ = load()
     task = next((t for t in tasks if t["id"] == task_id), None)
     if task is None:
@@ -121,7 +125,14 @@ def validate(study, regrade=True):
     expected_benchmark = {"name": "TeoBench", "level": "easy", "version": __version__,
         "tasks_sha256": manifest["public_sha256"], "acceptance_sha256": manifest["sealed_sha256"],
         "grader_sha256": grader_digest()}
-    if study["benchmark"] != expected_benchmark:
+    # The one previously published grader remains readable, with original
+    # provenance intact and separate statistical grouping. Regrading still uses
+    # the current isolated backend; unknown grader hashes are never accepted.
+    historical = "7764269832dde6894979d35ea0bbdd2b6aab0161b8ab796c5b5d405926316308"
+    candidate = dict(study["benchmark"]) if isinstance(study["benchmark"], dict) else {}
+    if candidate.get("grader_sha256") == historical:
+        candidate["grader_sha256"] = grader_digest()
+    if candidate != expected_benchmark:
         raise ValueError("benchmark_or_grader_version_mismatch")
     rows = study["records"]
     if not isinstance(rows, list) or len(rows) > 3000:
@@ -195,6 +206,7 @@ def validate(study, regrade=True):
         "semantic_pass": sum(bool(r["evaluation"] and r["evaluation"]["semantic_pass"]) for r in study["records"]),
         "transport_errors": sum(r["transport_error"] is not None for r in study["records"]),
         "answers_regraded": regrade,
+        "regraded_with_sha256": grader_digest() if regrade else None,
         "model_identity_and_execution_trace": "submitter-reported; not independently attested"}
 
 
