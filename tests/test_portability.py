@@ -13,6 +13,12 @@ from teobench.sandbox import WINDOWS_IMAGE, run_command, windows_command, doctor
 
 
 class PortabilityTests(unittest.TestCase):
+    def setUp(self):
+        self.endpoint = patch('teobench.sandbox.local_docker_client',
+                              return_value=['docker.exe', '--host', 'npipe:////./pipe/dockerDesktopLinuxEngine'])
+        self.endpoint.start()
+        self.addCleanup(self.endpoint.stop)
+
     def test_windows_container_has_no_host_mounts_and_bounded_resources(self):
         with patch('teobench.sandbox.shutil.which', return_value='docker.exe'):
             command = windows_command('print(42)')
@@ -25,6 +31,7 @@ class PortabilityTests(unittest.TestCase):
         self.assertEqual(command[-5:], ['python', '-I', '-S', '-c', 'print(42)'])
 
     def test_public_image_prepare_preserves_user_docker_credentials(self):
+        self.endpoint.stop()
         calls = []
         temporary_config = []
         def fake(command, **kwargs):
@@ -41,12 +48,13 @@ class PortabilityTests(unittest.TestCase):
                 self.assertIn('npipe:////./pipe/dockerDesktopLinuxEngine', command)
                 return subprocess.CompletedProcess(command, 0, '', '')
             return subprocess.CompletedProcess(command, 1, '', 'error getting credentials: logon session unavailable')
-        with patch('teobench.sandbox.sys.platform', 'win32'), patch('teobench.sandbox.shutil.which', return_value='docker.exe'), patch('teobench.sandbox.subprocess.run', side_effect=fake), patch('teobench.sandbox.run_command', return_value=subprocess.CompletedProcess([], 0, '[true,true,true,true,true]', '')), patch('teobench.evaluate.python_outputs', return_value=[6]):
+        with patch('teobench.sandbox.sys.platform', 'win32'), patch('teobench.sandbox.shutil.which', return_value='docker.exe'), patch('teobench.sandbox.subprocess.run', side_effect=fake), patch('teobench.sandbox.run_command', return_value=subprocess.CompletedProcess([], 0, '[true,true,true,true,true]', '')), patch('teobench.evaluate.python_outputs', return_value=[6]), patch('teobench.evaluate.sql_outputs', return_value=[[6]]):
             self.assertEqual(doctor(prepare=True)['status'], 'PASS')
-        self.assertEqual(len(calls), 4)
+        self.assertEqual(len([command for command in calls if 'pull' in command]), 2)
         self.assertFalse(temporary_config[0].exists())
 
     def test_missing_docker_never_executes_candidate(self):
+        self.endpoint.stop()
         with patch('teobench.sandbox.shutil.which', return_value=None), self.assertRaisesRegex(RuntimeError, 'OS_sandbox_unavailable'):
             windows_command('print(42)')
 
@@ -57,7 +65,7 @@ class PortabilityTests(unittest.TestCase):
         with patch('teobench.sandbox.subprocess.run', side_effect=[failure, subprocess.CompletedProcess([], 0)]) as run:
             with self.assertRaises(subprocess.TimeoutExpired):
                 run_command(command)
-        self.assertEqual(run.call_args_list[1].args[0], ['docker.exe', 'rm', '-f', command[command.index('--name')+1]])
+        self.assertEqual(run.call_args_list[1].args[0], command[:command.index('run')]+['rm', '-f', command[command.index('--name')+1]])
 
     def test_docker_engine_or_missing_image_is_infrastructure_failure(self):
         with patch('teobench.sandbox.shutil.which', return_value='docker.exe'):

@@ -2,14 +2,18 @@
 
 import base64
 import collections
+from contextlib import contextmanager
 import datetime
 import hashlib
 import json
 import math
+import os
 import re
 import shutil
 import statistics
 import subprocess
+import sys
+import tempfile
 import time
 from pathlib import Path
 
@@ -25,12 +29,15 @@ EFFORTS = {"low", "medium", "high", "xhigh", "max", "default", "none"}
 # reviewed portable grader. Every saved
 # verdict must still match. Future grader changes require a new reviewed edge.
 COMPATIBLE_REGRADERS = {
+    "790d0b26fa422c28426994301f2f35d536a563f7fc5ad14899f6fdc3c42f3f1f": "2a3a06139c1691e561d053330bbb44cc3b0042049767a3aab6e61008c15c896c",
+    "ed230f09aa0c7df842bcf0b691b8e694599e1d533464df247abac5795e793a14": "2a3a06139c1691e561d053330bbb44cc3b0042049767a3aab6e61008c15c896c",
+    "99074aa5b4f52574c3da336f43ce6abf29e97ec86faaedfaeba9d5d49f322282": "2a3a06139c1691e561d053330bbb44cc3b0042049767a3aab6e61008c15c896c",
     "7764269832dde6894979d35ea0bbdd2b6aab0161b8ab796c5b5d405926316308":
-        "99074aa5b4f52574c3da336f43ce6abf29e97ec86faaedfaeba9d5d49f322282",
+        "2a3a06139c1691e561d053330bbb44cc3b0042049767a3aab6e61008c15c896c",
     "08214687c3a81703b01b2171f8e97442e8b7c33c1f30670e788963e2f50c6635":
-        "99074aa5b4f52574c3da336f43ce6abf29e97ec86faaedfaeba9d5d49f322282",
+        "2a3a06139c1691e561d053330bbb44cc3b0042049767a3aab6e61008c15c896c",
     "351c9710e3baf53251f4052cb8191035d7c2a99ab61b0537f34007cbf9229b8b":
-        "99074aa5b4f52574c3da336f43ce6abf29e97ec86faaedfaeba9d5d49f322282",
+        "2a3a06139c1691e561d053330bbb44cc3b0042049767a3aab6e61008c15c896c",
 }
 SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})|Bearer\s+[A-Za-z0-9._-]{20,}|https?://[^\s/]+:[^\s/@]+@|/(?:Users|home)/[^/\s]+/", re.I)
 
@@ -38,7 +45,7 @@ SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:gh[pousr]_[A-Za-z0
 def grader_digest():
     root = Path(__file__).resolve().parent
     digest = hashlib.sha256()
-    for name in ["evaluate.py", "code_worker.py", "sandbox.py"]:
+    for name in ["evaluate.py", "code_worker.py", "sandbox.py", "sql_worker.py"]:
         digest.update(name.encode()+b"\0"+(root/name).read_bytes())
     return digest.hexdigest()
 
@@ -56,9 +63,60 @@ def reject_secrets(value):
 
 
 def save(path, value):
-    path = Path(path)
+    path = Path(path).resolve()
+    payload = (json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False)+"\n").encode("utf-8")
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_bytes((json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False)+"\n").encode("utf-8"))
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(dir=path.parent, prefix='.'+path.name+'.', delete=False) as handle:
+            temporary = Path(handle.name)
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary, path)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
+@contextmanager
+def study_lock(path, timeout=60):
+    """Serialize the complete read/grade/write transaction across CLI processes."""
+    path = Path(path).resolve()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    # Keep the lock inode stable across atomic checkpoint replacements. OS locks
+    # are released even if the writer crashes; an empty sidecar is harmless.
+    with path.with_name(path.name+'.lock').open('a+b') as handle:
+        if sys.platform == 'win32':
+            import msvcrt
+            if handle.seek(0, 2) == 0:
+                handle.write(b'0')
+                handle.flush()
+            def acquire():
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            def release():
+                handle.seek(0)
+                msvcrt.locking(handle.fileno(), msvcrt.LK_UNLCK, 1)
+        else:
+            import fcntl
+            def acquire():
+                fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            def release():
+                fcntl.flock(handle, fcntl.LOCK_UN)
+        deadline = time.monotonic()+timeout
+        while True:
+            try:
+                acquire()
+                break
+            except OSError:
+                if time.monotonic() >= deadline:
+                    raise RuntimeError('study_checkpoint_busy_retry_record')
+                time.sleep(0.05)
+        try:
+            yield
+        finally:
+            release()
 
 
 def strict_object(value, keys, context):
@@ -115,11 +173,13 @@ def add_record(study, task_id, model, effort, answer, history, replicate=0,
     if task is None:
         raise ValueError("unknown_task")
     result = grade(task, answer, answers[task_id], history) if transport_error is None else None
-    study["records"].append({"task_id": task_id, "model": model, "effort": effort,
+    row = {"task_id": task_id, "model": model, "effort": effort,
         "replicate": replicate, "answer": answer, "tool_history": history,
         "elapsed_seconds": elapsed_seconds, "transport_error": transport_error,
-        "evaluation": result})
-    validate(study, regrade=False)
+        "evaluation": result}
+    candidate = dict(study, records=study['records']+[row])
+    validate(candidate, regrade=False)
+    study['records'].append(row)
     return study
 
 
@@ -154,7 +214,7 @@ def validate(study, regrade=True):
     if not isinstance(rows, list) or len(rows) > 3000:
         raise ValueError("records_must_be_array_up_to_3000")
     reject_secrets(study)
-    if len(json.dumps(study, ensure_ascii=False).encode()) > MAX_BYTES:
+    if len((json.dumps(study, ensure_ascii=False, indent=2, allow_nan=False)+'\n').encode('utf-8')) > MAX_BYTES:
         raise ValueError("study_exceeds_8MB")
     seen = set()
     groups = collections.defaultdict(list)
@@ -205,6 +265,9 @@ def validate(study, regrade=True):
                     raise ValueError("grader_environment_unavailable")
             if regrade:
                 actual = grade(task_map[row["task_id"]], row["answer"], answers[row["task_id"]], history)
+                if actual['error'] and ('OS_sandbox_unavailable' in actual['error']
+                                       or actual['error'].startswith('FileNotFoundError')):
+                    raise ValueError('grader_environment_unavailable')
                 fields = ["semantic_pass", "strict_pass", "passed_cases", "total_cases"]
                 # Exception wording can vary between supported Python/SQLite
                 # versions; the verdict and failure class must still agree.

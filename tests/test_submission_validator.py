@@ -27,8 +27,9 @@ class TrustedValidatorTests(unittest.TestCase):
             self.assertEqual(report[0]['records'],1)
             self.assertTrue(report[0]['answers_regraded'])
             files.append({'filename':'teobench/evaluate.py','status':'modified','sha':'0'*40})
-            with self.assertRaisesRegex(ValueError,'only_add_study_json'):
-                validator.validate_files('owner/repo','1')
+            with patch.object(validator, 'validate', side_effect=AssertionError('must reject before grading')):
+                with self.assertRaisesRegex(ValueError,'only_add_study_json'):
+                    validator.validate_files('owner/repo','1')
 
     def test_trusted_workflow_resolves_pr_and_posts_verdict(self):
         calls=[]

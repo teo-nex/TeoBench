@@ -83,6 +83,8 @@ def validate_files(repo, number):
     else:
         raise ValueError("too_many_changed_files")
     data_files = [f for f in files if f["filename"].startswith("Easy-Bench/studies/")]
+    if data_files and len(data_files) != len(files):
+        raise ValueError("study_submission_must_only_add_study_json_files; submit_code_changes_separately")
     reports=[]
     for file in data_files:
         match = re.fullmatch(r"Easy-Bench/studies/([a-z0-9][a-z0-9-]{2,79})/study\.json", file["filename"])
@@ -115,8 +117,6 @@ def validate_files(repo, number):
             if not report["records"]:
                 raise ValueError("empty_study")
             reports.append(report)
-    if reports and len(data_files) != len(files):
-        raise ValueError("study_submission_must_only_add_study_json_files; submit_code_changes_separately")
     return reports
 
 

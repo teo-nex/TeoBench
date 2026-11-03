@@ -8,6 +8,11 @@ from teobench.evaluate import DOCKER_IMAGE, docker_run, sandbox_run
 
 
 class DockerSandboxTests(unittest.TestCase):
+    def setUp(self):
+        platform = patch('teobench.evaluate.sys.platform', 'linux')
+        platform.start()
+        self.addCleanup(platform.stop)
+
     def test_setup_failure_uses_isolated_docker_but_worker_failure_does_not(self):
         failure = subprocess.CompletedProcess([], 1, '', 'bwrap: namespace denied')
         success = subprocess.CompletedProcess([], 0, 'ok', '')

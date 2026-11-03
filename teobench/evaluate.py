@@ -1,6 +1,7 @@
 """Deterministic grading, separately constrained Python and read-only SQLite."""
 
 import json
+from functools import lru_cache
 import re
 import shutil
 import sqlite3
@@ -89,14 +90,20 @@ def sandbox_command(script):
 
 
 def docker_run(script, input=None, timeout=5):
-    docker = shutil.which("docker")
-    if docker is None:
-        raise RuntimeError("OS_sandbox_unavailable_bubblewrap_or_local_docker_required")
-    # Ignore any configured remote Docker context; answers stay on this host.
-    client = [docker, "--host=unix:///var/run/docker.sock"]
+    if sys.platform == 'darwin':
+        from .sandbox import local_docker_client, docker_environment
+        client = local_docker_client()
+        environment = docker_environment()
+    else:
+        docker = shutil.which("docker")
+        if docker is None:
+            raise RuntimeError("OS_sandbox_unavailable_bubblewrap_or_local_docker_required")
+        # Linux ignores remote contexts; macOS resolves its local Desktop socket.
+        client = [docker, "--host=unix:///var/run/docker.sock"]
+        environment = {"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"}
     name = "teobench-worker-" + uuid.uuid4().hex
     options = dict(capture_output=True, text=True, cwd="/",
-                   env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"})
+                   env=environment)
     # No host mounts, Docker socket, network, writable filesystem or elevated
     # privileges. IPC=none also removes the writable /dev/shm shared memory.
     command = client + ["create", "--name", name, "--pull=never", "--interactive",
@@ -119,7 +126,7 @@ def docker_run(script, input=None, timeout=5):
         if result.returncode in {125, 126, 127} or (result.returncode and
                 result.stderr.startswith(("Error response from daemon:", "Error: failed to start"))):
             raise RuntimeError("OS_sandbox_unavailable_docker_start_failed")
-        result.sandbox_backend = "linux-docker"
+        result.sandbox_backend = "macos-docker" if sys.platform == 'darwin' else "linux-docker"
         return result
     finally:
         # Also attempt cleanup after a create timeout; never remove containers
@@ -129,24 +136,35 @@ def docker_run(script, input=None, timeout=5):
             raise RuntimeError("OS_sandbox_unavailable_docker_cleanup_failed")
 
 
-def sandbox_run(script, input=None, timeout=5):
-    backend = os.environ.get("TEOBENCH_PYTHON_SANDBOX", "auto")
-    if backend not in {"auto", "bubblewrap", "docker"}:
+def sandbox_run(script, input=None, timeout=5, executable=None, backend=None):
+    if executable is not None and sys.platform != 'darwin':
+        raise RuntimeError('OS_sandbox_unavailable_runtime_override_requires_macos')
+    backend = backend or os.environ.get("TEOBENCH_PYTHON_SANDBOX", "auto")
+    if backend not in {"auto", "bubblewrap", "docker", "seatbelt"}:
         raise RuntimeError("OS_sandbox_unavailable_unknown_backend")
-    if sys.platform == "win32" and backend == "auto":
+    if sys.platform == "win32" and backend in {"auto", "docker"}:
         from .sandbox import run_command
         return run_command(sandbox_command(script), input, timeout=timeout)
     linux = sys.platform.startswith("linux")
+    macos = sys.platform == 'darwin'
+    if (backend == 'seatbelt' and not macos) or (backend == 'bubblewrap' and not linux):
+        raise RuntimeError('OS_sandbox_unavailable_backend_platform_mismatch')
     if backend == "docker":
-        if not linux:
-            raise RuntimeError("OS_sandbox_unavailable_docker_requires_linux")
+        if not (linux or macos):
+            raise RuntimeError("OS_sandbox_unavailable_docker_unsupported_platform")
         return docker_run(script, input=input, timeout=timeout)
     try:
-        result = subprocess.run(sandbox_command(script), input=input, capture_output=True,
+        command = sandbox_command(script)
+        if executable is not None:
+            command[-4] = executable
+        result = subprocess.run(command, input=input, capture_output=True,
                                 text=True, timeout=timeout, cwd="/",
                                 env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"})
-    except RuntimeError:
-        if not linux or backend != "auto":
+        if macos and result.returncode and result.stderr.startswith('sandbox-exec:'):
+            raise RuntimeError('OS_sandbox_unavailable_macos_seatbelt_setup_failed')
+    except RuntimeError as error:
+        if (not (linux or macos) or backend != "auto"
+                or not str(error).startswith('OS_sandbox_unavailable')):
             raise
     else:
         if not (linux and result.returncode and result.stderr.startswith("bwrap:")):
@@ -174,41 +192,55 @@ def python_outputs(source, inputs):
     return result["outputs"]
 
 
+@lru_cache(maxsize=1)
+def sql_runtime():
+    if sys.platform != 'darwin':
+        return None
+    # Apple CLT Python may link SQLite built without working heap accounting.
+    # Probe only installed interpreters, in the same OS sandbox. No downloads
+    # or changes to either Python or the parent's SQLite global heap settings.
+    probe = ('import sqlite3,sys; c=sqlite3.connect(":memory:"); '
+             'r=c.execute("PRAGMA hard_heap_limit=67108864").fetchone(); '
+             'sys.exit(0 if r and 0 < r[0] <= 67108864 else 1)')
+    candidates = [sys.executable, shutil.which('python3'),
+                  '/opt/homebrew/bin/python3', '/usr/local/bin/python3']
+    seen = set()
+    for candidate in candidates:
+        if not candidate or candidate in seen or not Path(candidate).is_file():
+            continue
+        seen.add(candidate)
+        try:
+            result = sandbox_run(probe, executable=candidate)
+        except (OSError, subprocess.TimeoutExpired):
+            continue
+        if result.returncode == 0:
+            return candidate
+    raise RuntimeError('OS_sandbox_unavailable_SQLite_heap_limit_use_supported_installed_Python')
+
+
+def sql_batch(query, fixtures):
+    if len(query.encode('utf-8')) > 100_000:
+        raise ValueError('sql_length_limit')
+    worker = (ROOT / 'sql_worker.py').read_text(encoding='utf-8-sig')
+    request = {'query': query, 'fixtures': [{'tables': fixture['tables']} for fixture in fixtures]}
+    completed = sandbox_run(worker, input=json.dumps(request), executable=sql_runtime())
+    if completed.returncode:
+        raise RuntimeError('sandbox_worker_exit_'+str(completed.returncode))
+    if len(completed.stdout) > 2_000_000:
+        raise RuntimeError('worker_output_limit')
+    result = json.loads(completed.stdout)
+    if 'error' in result:
+        errors = {name: getattr(sqlite3, name) for name in
+                  ['Error', 'DatabaseError', 'OperationalError', 'DataError',
+                   'IntegrityError', 'ProgrammingError', 'InterfaceError', 'NotSupportedError']}
+        errors.update(ValueError=ValueError, RuntimeError=RuntimeError, MemoryError=MemoryError,
+                      TypeError=TypeError, OverflowError=OverflowError)
+        raise errors.get(result['error'], ValueError)(result.get('message', 'sql_worker_failed'))
+    return result['outputs']
+
+
 def sql_outputs(query, fixture):
-    if len(query.encode("utf-8")) > 100_000:
-        raise ValueError("sql_length_limit")
-    connection = sqlite3.connect(":memory:")
-    try:
-        for table, info in fixture["tables"].items():
-            columns = ",".join('"'+c+'"' for c in info["columns"])
-            connection.execute('CREATE TABLE "'+table+'" ('+columns+')')
-            connection.executemany('INSERT INTO "'+table+'" VALUES ('+','.join('?' for _ in info["columns"])+')', info["rows"])
-        allowed = {sqlite3.SQLITE_SELECT, sqlite3.SQLITE_READ, sqlite3.SQLITE_FUNCTION, sqlite3.SQLITE_RECURSIVE}
-
-        def authorize(action, arg1, arg2, database, trigger):
-            if action not in allowed or (action == sqlite3.SQLITE_FUNCTION and str(arg2).lower() == "load_extension"):
-                return sqlite3.SQLITE_DENY
-            return sqlite3.SQLITE_OK
-
-        connection.set_authorizer(authorize)
-        steps = 0
-
-        def progress():
-            nonlocal steps
-            steps += 1
-            return steps > 500
-
-        connection.set_progress_handler(progress, 1000)
-        if hasattr(connection, "setlimit"):
-            connection.setlimit(sqlite3.SQLITE_LIMIT_SQL_LENGTH, 100_000)
-        cursor = connection.execute(query)
-        rows = cursor.fetchmany(10_001)
-        if len(rows) > 10_000:
-            raise ValueError("row_limit")
-        return [list(row) for row in rows]
-    finally:
-        connection.close()
-
+    return sql_batch(query, [fixture])[0]
 
 def grade(task, answer, acceptance, tool_history=None):
     result = {"semantic_pass": False, "strict_pass": False, "passed_cases": 0, "total_cases": 1, "error": None}
@@ -220,7 +252,7 @@ def grade(task, answer, acceptance, tool_history=None):
             if task["family"] == "code":
                 outputs = python_outputs(clean, [c["input"] for c in cases])
             else:
-                outputs = [sql_outputs(clean, case) for case in cases]
+                outputs = sql_batch(clean, cases)
             result["passed_cases"] = sum(canonical(out) == canonical(case["expected"]) for out, case in zip(outputs, cases))
             result["semantic_pass"] = len(outputs) == len(cases) and result["passed_cases"] == len(cases)
             result["strict_pass"] = result["semantic_pass"] and clean == answer.strip()

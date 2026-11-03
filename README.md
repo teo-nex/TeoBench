@@ -20,20 +20,25 @@ The first tier, **[Easy-Bench](Easy-Bench/README.md)**, contains 30 tasks from a
 
 Read **[Run the full study](docs/RUN_FULL_STUDY.md)** and [AGENTS.md](AGENTS.md). The exact models, efforts, task IDs and phase settings are in [campaign.json](Easy-Bench/campaign.json). The agent invokes the configured models; the CLI alone does not perform inference.
 
-```bash
-python3 -m teobench campaign plan
-python3 -m teobench campaign status --file local-runs/study.json
+**Send this command to your agent, not to a shell:**
+
+```text
+RUN_TEO_BENCH: execute RUN_RESEARCH.md in https://github.com/teo-nex/TeoBench now. Run all 1127 trials using my existing model access, save every attempt and resume until COMPLETE or a concrete BLOCKED condition. Do not stop at reading the repository or printing a plan. Ask before publishing results.
 ```
+
+See the [execution task](RUN_RESEARCH.md). A read-only client or missing model access must be reported as BLOCKED; cloning the repository does not grant those permissions.
 
 ## Quick start
 
-Python 3.9+ and the standard library are sufficient for the inspection and grading CLI; no Python packages or API keys are required. Grading Python answers additionally requires one of:
+Python 3.9+ and the standard library run the CLI; no Python packages or API keys are required. Python and SQL grading additionally require an OS sandbox:
 
-- **macOS:** `/usr/bin/sandbox-exec` and a Python interpreter installed outside `/Users` and `/Volumes`.
+- **macOS:** built-in Seatbelt and Python outside `/Users` and `/Volumes`, with automatic fallback to an existing local Docker Linux engine when Seatbelt setup is denied. Run `python3 -m teobench doctor --prepare` before model requests; Docker is unnecessary when Seatbelt works.
 - **Windows 10/11:** native Windows Python plus a running [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) Linux engine. Run `py -3 -m teobench doctor --prepare` once to fetch the pinned official Python image. No WSL command, Bash, `resource` module or POSIX path is required in the Windows CLI.
 - **Linux:** [Bubblewrap](https://github.com/containers/bubblewrap) (`bwrap`, with `--disable-userns` support), permitted unprivileged user/network namespaces, and a Python interpreter whose resolved executable is under `/usr`. Install Bubblewrap with your distribution's package manager (for example, `sudo apt-get install bubblewrap`). The checkout and home directory must be outside `/usr`, `/lib`, and `/lib64`.
 
 The Linux sandbox exposes only read-only system runtime directories, with no host home, checkout, temporary files or `/proc`, and isolates the network, processes and environment. If isolation is unavailable or prohibited by the host, grading fails closed; no unconfined fallback is used. On Windows, the worker runs inside a disposable Linux container with no host mounts, no network, a read-only root, an unprivileged user, dropped capabilities, and CPU/memory/process limits. The Python worker stays isolated from the Windows checkout and credentials. Other operating systems remain unsupported for Python execution. On Linux, if Bubblewrap cannot initialize, TeoBench can use an already configured local Docker daemon and a pinned, locally available Python image instead. It never downloads images or changes AppArmor/sysctl settings. See [sandbox requirements and backend selection](docs/PROTOCOL.md).
+
+SQL needs a runtime with an enforceable SQLite heap limit. On macOS, TeoBench can reuse an already installed Python when Apple's SQLite cannot enforce that limit; it downloads nothing. macOS Seatbelt has no hard Python RAM limit, so deliberately hostile submissions belong on a disposable Linux/container host. Read the [security boundaries](SECURITY.md).
 
 ```bash
 git clone https://github.com/teo-nex/TeoBench.git
@@ -53,7 +58,7 @@ py -3 -m teobench campaign plan
 py -3 -m unittest discover -s tests -v
 ```
 
-On **macOS/Linux**, run `python3 -m teobench doctor` before inference. See [OS setup and troubleshooting](docs/SETUP.md). `doctor` checks grading isolation, not model access. The agent must then verify all 35 model/effort conditions separately. Setup reuses installed tools; it does not change host security or network policy.
+On **macOS**, run `python3 -m teobench doctor --prepare`; on **Linux**, run `python3 -m teobench doctor` before inference. See [OS setup and troubleshooting](docs/SETUP.md). `doctor` checks grading isolation, not model access. The agent must then verify all 35 model/effort conditions separately. Setup reuses installed tools; it does not change host security or network policy.
 
 Grade an individual answer:
 

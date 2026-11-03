@@ -5,6 +5,8 @@ import collections
 import hashlib
 import importlib.util
 import json
+import subprocess
+import sys
 from pathlib import Path
 
 from .evaluate import grade
@@ -54,8 +56,8 @@ def main(argv=None):
         sys.stdout.reconfigure(encoding="utf-8")
     parser = argparse.ArgumentParser(description="TeoBench Easy — offline benchmark inspection and grading")
     sub = parser.add_subparsers(dest="command", required=True)
-    doctor = sub.add_parser("doctor", help="check OS sandbox; Windows uses an existing Linux Docker engine")
-    doctor.add_argument("--prepare", action="store_true", help="on Windows, explicitly pull the pinned Python sandbox image")
+    doctor = sub.add_parser("doctor", help="check Python/SQL sandbox before model requests")
+    doctor.add_argument("--prepare", action="store_true", help="prepare pinned local Docker image on Windows or when needed on macOS")
     sub.add_parser("verify", help="check hashes and regenerate all 30 original tasks in memory")
     listing = sub.add_parser("list", help="list original task IDs and titles")
     listing.add_argument("--family", choices=["reasoning", "code", "sql", "data", "tools"])
@@ -131,18 +133,21 @@ def main(argv=None):
         if args.command == "study":
             from . import studies
             if args.action == "create":
-                if args.file.exists():
-                    raise ValueError("study_file_already_exists")
-                value = studies.create(args.id, args.access_route, args.environment)
-                studies.save(args.file, value)
+                with studies.study_lock(args.file):
+                    if args.file.exists():
+                        raise ValueError("study_file_already_exists")
+                    value = studies.create(args.id, args.access_route, args.environment)
+                    studies.save(args.file, value)
                 emit({"created": str(args.file), "records": 0})
             elif args.action == "record":
-                value = studies.load_json(args.file)
-                studies.validate(value, regrade=False)
                 history = studies.load_json(args.history) if args.history else []
-                studies.add_record(value, args.task, args.model, args.effort, args.answer.read_text(encoding="utf-8-sig"), history,
-                    args.replicate, args.seconds, args.transport_error)
-                studies.save(args.file, value)
+                answer = args.answer.read_text(encoding="utf-8-sig")
+                with studies.study_lock(args.file):
+                    value = studies.load_json(args.file)
+                    studies.validate(value, regrade=False)
+                    studies.add_record(value, args.task, args.model, args.effort, answer, history,
+                        args.replicate, args.seconds, args.transport_error)
+                    studies.save(args.file, value)
                 emit(studies.validate(value, regrade=False))
             elif args.action == "validate":
                 emit(studies.validate(studies.load_json(args.file)))
@@ -161,7 +166,15 @@ def main(argv=None):
                 with args.output.with_suffix(".csv").open("w", newline="", encoding="utf-8") as handle:
                     writer = csv.DictWriter(handle, fieldnames=fields, lineterminator="\n")
                     writer.writeheader()
-                    writer.writerows(report["groups"])
+                    def csv_value(value):
+                        # Preserve raw metadata in JSON, but prevent spreadsheet
+                        # applications from executing contributor text as formulas.
+                        if isinstance(value, str) and (value.startswith(('\t', '\r', '\n'))
+                                or value.lstrip().startswith(('=', '+', '-', '@'))):
+                            return "'"+value
+                        return value
+                    writer.writerows({key: csv_value(value) for key, value in group.items()}
+                                     for group in report["groups"])
             emit(report)
             return 0
         if args.command == "verify":
@@ -190,6 +203,16 @@ def main(argv=None):
         result = grade(task, args.answer.read_text(encoding="utf-8-sig"), answers[task["id"]], history)
         emit(result)
         return 0 if result["semantic_pass"] else 1
-    except (ValueError, KeyError, OSError, RuntimeError) as error:
-        emit({"error": str(error)})
+    except (ValueError, KeyError, OSError, RuntimeError, subprocess.TimeoutExpired) as error:
+        report = {"error": str(error)}
+        if args.command == 'doctor':
+            report['status'] = 'BLOCKED'
+            if sys.platform == 'darwin':
+                report['next_step'] = (
+                    'Do not start model requests. If permitted, run this command in ordinary Terminal: '
+                    'python3 -m teobench doctor --prepare. It uses native Seatbelt first; '
+                    'if denied, it prepares the pinned image in an already running local Docker Linux engine. '
+                    'If both are unavailable, retain answers and use another authorized grading host. '
+                    'See docs/SETUP.md. No host security changes are needed.')
+        emit(report)
         return 2

@@ -14,7 +14,9 @@ The default research is **7 models × 5 reasoning efforts × 30 unchanged tasks 
 
 ## Give this to your agent
 
-> Read AGENTS.md and Easy-Bench/campaign.json. Reproduce the full seven-model reasoning-effort study: 1050 primary trials across all 35 model/effort conditions, plus the defined 35 pilot and 42 control trials. Use my configured model interfaces, preserve exact IDs and efforts, persist progress, and resume missing trials. Do not stop at 30 tasks or evaluate only your current model. If any required route or effort is unavailable, report BLOCKED without substitution. After completion, show the results and offer to submit the study to TeoBench; publish only with my consent.
+> RUN_TEO_BENCH: execute RUN_RESEARCH.md now. Run all 1127 trials through my configured model interfaces, preserve exact IDs and efforts, persist every attempt and resume missing trials. Do not stop at reading the repository, printing a plan, running 30 tasks or evaluating only your current model. Continue to COMPLETE or report a concrete BLOCKED condition. Show results and ask before publishing.
+
+The [root execution task](../RUN_RESEARCH.md) distinguishes actual model trials from read-only CLI commands. `RUN_TEO_BENCH` is a message to the agent, not a shell executable. Client read-only restrictions and missing model access cannot be changed by Markdown instructions; report those exact blockers instead of claiming the research ran.
 
 A user may explicitly request a narrow smoke test (for example, two real tasks) to check OS setup. Keep it local and label it partial; it does not satisfy campaign completion or submission.
 
