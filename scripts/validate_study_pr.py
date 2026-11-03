@@ -9,7 +9,7 @@ import sys
 import urllib.request
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-from teobench.studies import MAX_BYTES, load_json, save, validate
+from teobench.studies import MAX_BYTES, load_json, require_current_grader, save, validate
 from teobench.campaign import require_complete
 
 
@@ -108,6 +108,7 @@ def validate_files(repo, number):
             if value["study_id"] != match[1]:
                 raise ValueError("study_id_directory_mismatch")
             validate(value, regrade=False)
+            require_current_grader(value)
             campaign = require_complete(value)
             report = validate(value)
             report["campaign"] = campaign
