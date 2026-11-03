@@ -155,7 +155,7 @@ def main(argv=None):
             report = studies.statistics_report(args.directory.glob("*/study.json"))
             if args.output:
                 studies.save(args.output, report)
-                fields = ["model", "effort", "access_route", "environment", "grader_sha256",
+                fields = ["model", "effort", "access_route", "environment", "grader_sha256", "regraded_with_sha256",
                           "studies", "runs", "task_results", "median_pass_rate", "mean_pass_rate",
                           "min_pass_rate", "max_pass_rate", "transport_errors"]
                 with args.output.with_suffix(".csv").open("w", newline="", encoding="utf-8") as handle:

@@ -85,7 +85,7 @@ class PortabilityTests(unittest.TestCase):
         original = value['benchmark']['grader_sha256']
         self.assertEqual(studies.validate(value, regrade=False)['records'], 1050)
         self.assertEqual(value['benchmark']['grader_sha256'], original)
-        with self.assertRaisesRegex(ValueError, 'checkpoint_grader_changed'):
+        with self.assertRaisesRegex(ValueError, 'historical_study_is_read_only'):
             studies.add_record(value, 'R01', 'test-model', 'high', '{}', [])
         value['benchmark']['grader_sha256'] = '0'*64
         with self.assertRaisesRegex(ValueError, 'version_mismatch'):

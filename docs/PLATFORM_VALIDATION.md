@@ -4,10 +4,10 @@ This is a harness compatibility check and an explicitly requested two-task model
 
 | Environment | Validation | Result |
 |---|---|---|
-| macOS, system Python 3.9.6, sandbox-exec | complete unittest suite | 41 tests, PASS; 1 Linux-only test skipped |
-| Windows 10 x64, native Python 3.13.7, Docker 29.2.1 Linux engine | `doctor --prepare`, complete unittest suite, UTF-8 with `PYTHONUTF8=0` | PASS; 41 tests, 2 POSIX-specific tests skipped |
-| Ubuntu under WSL, system Python 3.14.4, Bubblewrap | `doctor`, complete unittest suite | PASS; 41 tests, no skips |
-| Historical published study | regrade/aggregate using the current macOS backend | PASS; all 1050 recorded results, 35 statistical groups retained |
+| macOS, system Python 3.9.6, sandbox-exec | complete unittest suite | 49 tests, PASS; 1 Linux-only test skipped |
+| Windows 10 x64, native Python 3.13.7, Docker 29.2.1 Linux engine | `doctor --prepare`, complete unittest suite, UTF-8 with `PYTHONUTF8=0` | PASS; 49 tests, 2 POSIX-specific tests skipped |
+| Ubuntu under WSL, system Python 3.14.4, Bubblewrap | `doctor`, complete unittest suite | PASS; 49 tests, no skips |
+| Historical published study | regrade/aggregate using current macOS, Windows and Linux backends | PASS; all 1050 recorded results, 35 statistical groups retained |
 
 The complete suite includes all 30 reference solutions (300 Python cases and 72 SQLite fixtures), wrong/empty answers, filesystem/network boundaries, code restrictions/timeouts, tool receipts, report validation and the full-campaign submission gate. Tests use synthetic fixtures where indicated; they do not call models.
 

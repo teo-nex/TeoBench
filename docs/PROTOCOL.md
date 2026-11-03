@@ -61,6 +61,12 @@ This avoids a dependency on `pull_request_target` execution policies; see [GitHu
 
 Maintainers can also recheck a PR explicitly with `gh workflow run studies.yml -R teo-nex/TeoBench -f pr_number=NUMBER`. This runs the same trusted validator and posts a verdict for that PR's current head, without merging it.
 
+### Historical grader compatibility
+
+Accepted study files are immutable. The Linux/Windows sandboxes change the grader source hash; it does not relabel historical answers or infer new model results. `studies.COMPATIBLE_REGRADERS` explicitly permits the pre-Linux grader hash `7764269832dde6894979d35ea0bbdd2b6aab0161b8ab796c5b5d405926316308` and the Linux-only grader `08214687c3a81703b01b2171f8e97442e8b7c33c1f30670e788963e2f50c6635` to be rechecked with portable grader `351c9710e3baf53251f4052cb8191035d7c2a99ab61b0537f34007cbf9229b8b`. These are two explicit reviewed source/target pairs, not permission for unknown hashes or future graders. Dataset, acceptance and version checks remain exact, and every saved verdict must agree with the current regrade.
+
+`study validate` and `stats` can read this historical version. Their reports identify the recorded grader separately from `regraded_with_sha256`; `answers_regraded=false` leaves the latter null. Statistics retain separate groups under the recorded `grader_sha256` and name the actual regrader in both JSON and CSV. Unknown or unreviewed versions fail closed. Recording new answers and submitting new studies, including trusted PR validation, require the current grader; create a new study ID instead of mixing grader versions. Historical studies are not rewritten, and their incomplete campaign coverage remains unchanged.
+
 Statistics include only complete 30-task conditions and report run count, study count, mean/median/min/max pass rates and transport errors. Different model IDs, effort, routes, environments and grader digests remain separate. Exact duplicated response sets are excluded even if study metadata is changed. This does not prevent a malicious contributor inventing a different self-report or claiming a different model.
 
 A submission's scores can be independently checked from public answers. Model identity, execution settings, repeat-selection policy and tool-call provenance are self-reported. Latency is recorded only when available and is not mixed into a quality ranking.

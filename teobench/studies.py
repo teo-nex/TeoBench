@@ -20,6 +20,16 @@ UPSTREAM = "teo-nex/TeoBench"
 MAX_BYTES = 8_000_000
 SLUG = re.compile(r"[a-z0-9][a-z0-9-]{2,79}\Z")
 EFFORTS = {"low", "medium", "high", "xhigh", "max", "default", "none"}
+# Explicit, non-transitive regrading compatibility: the pre-Linux grader at
+# aacfaa7 and the Bubblewrap grader from PR #3 may be checked with the
+# reviewed portable grader. Every saved
+# verdict must still match. Future grader changes require a new reviewed edge.
+COMPATIBLE_REGRADERS = {
+    "7764269832dde6894979d35ea0bbdd2b6aab0161b8ab796c5b5d405926316308":
+        "351c9710e3baf53251f4052cb8191035d7c2a99ab61b0537f34007cbf9229b8b",
+    "08214687c3a81703b01b2171f8e97442e8b7c33c1f30670e788963e2f50c6635":
+        "351c9710e3baf53251f4052cb8191035d7c2a99ab61b0537f34007cbf9229b8b",
+}
 SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})|Bearer\s+[A-Za-z0-9._-]{20,}|https?://[^\s/]+:[^\s/@]+@|/(?:Users|home)/[^/\s]+/", re.I)
 
 
@@ -29,6 +39,11 @@ def grader_digest():
     for name in ["evaluate.py", "code_worker.py", "sandbox.py"]:
         digest.update(name.encode()+b"\0"+(root/name).read_bytes())
     return digest.hexdigest()
+
+
+def require_current_grader(study):
+    if study["benchmark"]["grader_sha256"] != grader_digest():
+        raise ValueError("historical_study_is_read_only_create_a_new_study")
 
 
 def reject_secrets(value):
@@ -92,8 +107,7 @@ def create(study_id, access_route, environment):
 def add_record(study, task_id, model, effort, answer, history, replicate=0,
                elapsed_seconds=None, transport_error=None):
     from .cli import load
-    if study.get("benchmark", {}).get("grader_sha256") != grader_digest():
-        raise ValueError("checkpoint_grader_changed_do_not_mix_execution_versions")
+    require_current_grader(study)
     tasks, answers, _ = load()
     task = next((t for t in tasks if t["id"] == task_id), None)
     if task is None:
@@ -122,17 +136,17 @@ def validate(study, regrade=True):
     text(study["environment"], 300, "environment")
     text(study["access_route"], 300, "access_route")
     text(study["method"], 2000, "method")
+    current_grader = grader_digest()
+    benchmark = study["benchmark"]
+    recorded_grader = benchmark.get("grader_sha256") if isinstance(benchmark, dict) else None
+    if (not isinstance(recorded_grader, str)
+            or (recorded_grader != current_grader
+                and COMPATIBLE_REGRADERS.get(recorded_grader) != current_grader)):
+        raise ValueError("benchmark_or_grader_version_mismatch")
     expected_benchmark = {"name": "TeoBench", "level": "easy", "version": __version__,
         "tasks_sha256": manifest["public_sha256"], "acceptance_sha256": manifest["sealed_sha256"],
-        "grader_sha256": grader_digest()}
-    # The one previously published grader remains readable, with original
-    # provenance intact and separate statistical grouping. Regrading still uses
-    # the current isolated backend; unknown grader hashes are never accepted.
-    historical = "7764269832dde6894979d35ea0bbdd2b6aab0161b8ab796c5b5d405926316308"
-    candidate = dict(study["benchmark"]) if isinstance(study["benchmark"], dict) else {}
-    if candidate.get("grader_sha256") == historical:
-        candidate["grader_sha256"] = grader_digest()
-    if candidate != expected_benchmark:
+        "grader_sha256": recorded_grader}
+    if benchmark != expected_benchmark:
         raise ValueError("benchmark_or_grader_version_mismatch")
     rows = study["records"]
     if not isinstance(rows, list) or len(rows) > 3000:
@@ -206,7 +220,8 @@ def validate(study, regrade=True):
         "semantic_pass": sum(bool(r["evaluation"] and r["evaluation"]["semantic_pass"]) for r in study["records"]),
         "transport_errors": sum(r["transport_error"] is not None for r in study["records"]),
         "answers_regraded": regrade,
-        "regraded_with_sha256": grader_digest() if regrade else None,
+        "recorded_grader_sha256": recorded_grader,
+        "regraded_with_sha256": current_grader if regrade else None,
         "model_identity_and_execution_trace": "submitter-reported; not independently attested"}
 
 
@@ -216,6 +231,7 @@ def statistics_report(paths, regrade=True):
     accepted = []
     incomplete = 0
     duplicates = 0
+    regraded_with = grader_digest() if regrade else None
     for path in sorted(map(Path, paths)):
         study = load_json(path)
         report = validate(study, regrade=regrade)
@@ -247,13 +263,15 @@ def statistics_report(paths, regrade=True):
         scores = [r["passed"] / 30 for r in runs]
         entries.append({"model": model, "effort": effort, "access_route": route,
             "environment": environment, "grader_sha256": grader,
+            "regraded_with_sha256": regraded_with,
             "studies": len({r["study_id"] for r in runs}), "runs": len(runs), "task_results": 30*len(runs),
             "median_pass_rate": statistics.median(scores), "mean_pass_rate": statistics.mean(scores),
             "min_pass_rate": min(scores), "max_pass_rate": max(scores),
             "transport_errors": sum(r["transport_errors"] for r in runs)})
     return {"schema_version": "1.0", "level": "easy", "studies": accepted,
         "incomplete_runs_excluded": incomplete, "duplicate_studies_excluded": duplicates,
-        "identity_status": "submitter-reported model IDs; scores regraded, inference not attested",
+        "answers_regraded": regrade, "regraded_with_sha256": regraded_with,
+        "identity_status": "submitter-reported model IDs; inference not attested; see answers_regraded for score checks",
         "aggregation": "Complete 30-task runs only; grouped by model, effort, access route, environment and grader. Not a representative population sample.",
         "groups": entries}
 
@@ -261,6 +279,7 @@ def statistics_report(paths, regrade=True):
 def publish(path, publish=False, gh=None):
     study = load_json(path)
     report = validate(study, regrade=False)
+    require_current_grader(study)
     if not report["records"]:
         raise ValueError("cannot_submit_empty_study")
     from .campaign import require_complete
