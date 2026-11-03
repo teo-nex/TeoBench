@@ -8,8 +8,12 @@ import subprocess
 import sys
 from pathlib import Path
 import os
+import uuid
 
 ROOT = Path(__file__).resolve().parent
+# Official Python image, pinned to the reviewed multi-platform manifest. Never
+# pull during grading: the operator must have provisioned this image already.
+DOCKER_IMAGE = "python@sha256:281d39ff02e3b389401586134ff9e6572954687822a58055ec07a60ded4e0b7f"
 
 
 def canonical(value):
@@ -84,10 +88,80 @@ def sandbox_command(script):
     return [str(sandbox), "-p", profile, sys.executable, "-I", "-c", script]
 
 
+def docker_run(script, input=None, timeout=5):
+    docker = shutil.which("docker")
+    if docker is None:
+        raise RuntimeError("OS_sandbox_unavailable_bubblewrap_or_local_docker_required")
+    # Ignore any configured remote Docker context; answers stay on this host.
+    client = [docker, "--host=unix:///var/run/docker.sock"]
+    name = "teobench-worker-" + uuid.uuid4().hex
+    options = dict(capture_output=True, text=True, cwd="/",
+                   env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"})
+    # No host mounts, Docker socket, network, writable filesystem or elevated
+    # privileges. IPC=none also removes the writable /dev/shm shared memory.
+    command = client + ["create", "--name", name, "--pull=never", "--interactive",
+               "--network=none", "--ipc=none", "--read-only", "--cap-drop=ALL",
+               "--security-opt=no-new-privileges=true", "--user=65534:65534",
+               "--pids-limit=16", "--memory=128m", "--memory-swap=128m", "--cpus=1",
+               "--ulimit", "core=0", "--workdir=/", "--env", "LANG=C.UTF-8",
+               "--entrypoint", "/usr/local/bin/python3", DOCKER_IMAGE,
+               "-I", "-S", "-c", script]
+    # Create separately so a worker timeout cannot orphan a running container
+    # after the attached Docker client is killed by subprocess.run.
+    created = False
+    try:
+        result = subprocess.run(command, timeout=10, **options)
+        if result.returncode:
+            raise RuntimeError("OS_sandbox_unavailable_docker_create_failed_local_image_required")
+        created = True
+        result = subprocess.run(client + ["start", "--attach", "--interactive", name],
+                                input=input, timeout=timeout, **options)
+        if result.returncode in {125, 126, 127} or (result.returncode and
+                result.stderr.startswith(("Error response from daemon:", "Error: failed to start"))):
+            raise RuntimeError("OS_sandbox_unavailable_docker_start_failed")
+        result.sandbox_backend = "linux-docker"
+        return result
+    finally:
+        # Also attempt cleanup after a create timeout; never remove containers
+        # selected by a model, an image, or another concurrent TeoBench worker.
+        removed = subprocess.run(client + ["rm", "--force", name], timeout=10, **options)
+        if created and removed.returncode:
+            raise RuntimeError("OS_sandbox_unavailable_docker_cleanup_failed")
+
+
+def sandbox_run(script, input=None, timeout=5):
+    backend = os.environ.get("TEOBENCH_PYTHON_SANDBOX", "auto")
+    if backend not in {"auto", "bubblewrap", "docker"}:
+        raise RuntimeError("OS_sandbox_unavailable_unknown_backend")
+    if sys.platform == "win32" and backend == "auto":
+        from .sandbox import run_command
+        return run_command(sandbox_command(script), input, timeout=timeout)
+    linux = sys.platform.startswith("linux")
+    if backend == "docker":
+        if not linux:
+            raise RuntimeError("OS_sandbox_unavailable_docker_requires_linux")
+        return docker_run(script, input=input, timeout=timeout)
+    try:
+        result = subprocess.run(sandbox_command(script), input=input, capture_output=True,
+                                text=True, timeout=timeout, cwd="/",
+                                env={"PATH": "/usr/bin:/bin", "LANG": "C.UTF-8"})
+    except RuntimeError:
+        if not linux or backend != "auto":
+            raise
+    else:
+        if not (linux and result.returncode and result.stderr.startswith("bwrap:")):
+            result.sandbox_backend = "linux-bubblewrap" if linux else "macos-seatbelt"
+            return result
+        if backend == "bubblewrap":
+            raise RuntimeError("OS_sandbox_unavailable_bubblewrap_setup_failed")
+    # Retry only an infrastructure/setup failure, never a candidate-code error
+    # or timeout. Docker is another OS sandbox, not an unconfined fallback.
+    return docker_run(script, input=input, timeout=timeout)
+
+
 def python_outputs(source, inputs):
     worker = (ROOT / "code_worker.py").read_text(encoding="utf-8-sig")
-    from .sandbox import run_command
-    completed = run_command(sandbox_command(worker), json.dumps({"source": source, "inputs": inputs}))
+    completed = sandbox_run(worker, input=json.dumps({"source": source, "inputs": inputs}))
     if completed.returncode != 0:
         if sys.platform.startswith("linux") and completed.stderr.startswith("bwrap:"):
             raise RuntimeError("OS_sandbox_unavailable_bubblewrap_setup_failed")

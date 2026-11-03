@@ -45,7 +45,7 @@ def run_command(command, payload=None, timeout=5):
 
 
 def doctor(prepare=False):
-    from .evaluate import ROOT, sandbox_command
+    from .evaluate import ROOT, sandbox_run
     backend = ('macos-seatbelt' if sys.platform == 'darwin' else
                'linux-bubblewrap' if sys.platform.startswith('linux') else
                'windows-docker-linux' if sys.platform == 'win32' else 'unsupported')
@@ -106,7 +106,8 @@ print(json.dumps(checks))
     old = os.environ.get('TEOBENCH_PRIVATE_PROBE')
     try:
         os.environ['TEOBENCH_PRIVATE_PROBE'] = 'local-doctor-marker'
-        result = run_command(sandbox_command(script))
+        result = sandbox_run(script)
+        backend = getattr(result, "sandbox_backend", backend)
     finally:
         if old is None:
             os.environ.pop('TEOBENCH_PRIVATE_PROBE', None)

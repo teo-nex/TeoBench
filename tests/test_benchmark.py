@@ -9,7 +9,7 @@ import unittest
 from unittest.mock import patch
 
 from teobench.cli import ROOT, load, verify
-from teobench.evaluate import grade, python_outputs, sandbox_command, sql_outputs
+from teobench.evaluate import grade, python_outputs, sandbox_command, sandbox_run, sql_outputs
 from teobench import studies
 from teobench.sandbox import run_command, WINDOWS_IMAGE
 
@@ -62,14 +62,14 @@ class BenchmarkTests(unittest.TestCase):
     def test_os_sandbox_denies_references_and_network(self):
         reference = ROOT/'Easy-Bench/tasks/answers.json'
         script = 'try:\n open('+repr(str(reference))+').read()\nexcept (PermissionError, FileNotFoundError):\n print("BLOCKED")'
-        result = run_command(sandbox_command(script))
+        result = sandbox_run(script)
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.strip(), 'BLOCKED')
         with socket.socket() as listener:
             listener.bind(('127.0.0.1',0))
             listener.listen()
             script = 'import socket\ntry:\n socket.create_connection(("127.0.0.1",'+str(listener.getsockname()[1])+'),timeout=1)\nexcept OSError:\n print("BLOCKED")'
-            result = run_command(sandbox_command(script))
+            result = sandbox_run(script)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout.strip(), 'BLOCKED')
 
@@ -98,13 +98,13 @@ for path in ["/write-probe", "/usr/write-probe"]:
     except OSError:
         results.append(True)
 results.append("TEOBENCH_SANDBOX_TEST_SECRET" not in os.environ)
-results.append(not os.path.exists("/proc"))
+results.append(not os.path.exists("/proc") or (os.getpid() == 1 and os.getppid() == 0))
 results.append(bool(os.statvfs("/").f_flag & os.ST_RDONLY))
 results.append(bool(os.statvfs("/usr").f_flag & os.ST_RDONLY))
 print(json.dumps(results))
 '''.replace('PATHS', repr([str(marker), str(ROOT/'Easy-Bench/tasks/answers.json')]))
             with patch.dict('os.environ', {'TEOBENCH_SANDBOX_TEST_SECRET':'host-only marker'}):
-                result = run_command(sandbox_command(script))
+                result = sandbox_run(script)
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(json.loads(result.stdout), [True]*8)
             self.assertEqual(marker.read_text(), 'host-only marker')

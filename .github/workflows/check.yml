@@ -24,6 +24,15 @@ jobs:
         run: /usr/bin/python3 -m teobench verify
       - name: Test graders and public commands
         run: /usr/bin/python3 -m unittest discover -s tests -v
+      - name: Test restricted local Docker fallback
+        if: runner.os == 'Linux'
+        env:
+          TEOBENCH_PYTHON_SANDBOX: docker
+          PYTHONPATH: tests
+        run: |
+          docker pull "$(/usr/bin/python3 -c 'from teobench.evaluate import DOCKER_IMAGE; print(DOCKER_IMAGE)')"
+          /usr/bin/python3 -m teobench doctor
+          /usr/bin/python3 -m unittest -v test_benchmark.BenchmarkTests.test_all_oracles_pass_and_empty_answers_fail test_benchmark.BenchmarkTests.test_code_restrictions_and_timeout test_benchmark.BenchmarkTests.test_os_sandbox_denies_references_and_network test_benchmark.BenchmarkTests.test_linux_sandbox_hides_host_files_environment_and_denies_writes
   windows-cli:
     runs-on: windows-latest
     timeout-minutes: 10

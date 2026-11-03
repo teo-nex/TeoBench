@@ -16,7 +16,10 @@ from teobench.cli import ROOT, load
 
 
 LEGACY_GRADER = '7764269832dde6894979d35ea0bbdd2b6aab0161b8ab796c5b5d405926316308'
-PORTABLE_GRADER = '351c9710e3baf53251f4052cb8191035d7c2a99ab61b0537f34007cbf9229b8b'
+PORTABLE_GRADER = '99074aa5b4f52574c3da336f43ce6abf29e97ec86faaedfaeba9d5d49f322282'
+
+BUBBLEWRAP_GRADER = '08214687c3a81703b01b2171f8e97442e8b7c33c1f30670e788963e2f50c6635'
+PREVIOUS_PORTABLE_GRADER = '351c9710e3baf53251f4052cb8191035d7c2a99ab61b0537f34007cbf9229b8b'
 
 
 class GraderCompatibilityTests(unittest.TestCase):
@@ -39,6 +42,17 @@ class GraderCompatibilityTests(unittest.TestCase):
         preview = studies.validate(study, regrade=False)
         self.assertFalse(preview['answers_regraded'])
         self.assertIsNone(preview['regraded_with_sha256'])
+
+    def test_previous_graders_regrade_without_relabelling(self):
+        for digest in [BUBBLEWRAP_GRADER, PREVIOUS_PORTABLE_GRADER]:
+            with self.subTest(grader=digest):
+                study = self.historical_study()
+                study['benchmark']['grader_sha256'] = digest
+                original = copy.deepcopy(study)
+                report = studies.validate(study)
+                self.assertEqual(report['recorded_grader_sha256'], digest)
+                self.assertEqual(report['regraded_with_sha256'], PORTABLE_GRADER)
+                self.assertEqual(study, original)
 
     def test_unknown_grader_or_unreviewed_future_regrader_is_rejected(self):
         study = self.historical_study()

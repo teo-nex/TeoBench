@@ -26,9 +26,11 @@ EFFORTS = {"low", "medium", "high", "xhigh", "max", "default", "none"}
 # verdict must still match. Future grader changes require a new reviewed edge.
 COMPATIBLE_REGRADERS = {
     "7764269832dde6894979d35ea0bbdd2b6aab0161b8ab796c5b5d405926316308":
-        "351c9710e3baf53251f4052cb8191035d7c2a99ab61b0537f34007cbf9229b8b",
+        "99074aa5b4f52574c3da336f43ce6abf29e97ec86faaedfaeba9d5d49f322282",
     "08214687c3a81703b01b2171f8e97442e8b7c33c1f30670e788963e2f50c6635":
-        "351c9710e3baf53251f4052cb8191035d7c2a99ab61b0537f34007cbf9229b8b",
+        "99074aa5b4f52574c3da336f43ce6abf29e97ec86faaedfaeba9d5d49f322282",
+    "351c9710e3baf53251f4052cb8191035d7c2a99ab61b0537f34007cbf9229b8b":
+        "99074aa5b4f52574c3da336f43ce6abf29e97ec86faaedfaeba9d5d49f322282",
 }
 SECRET = re.compile(r"-----BEGIN [A-Z ]*PRIVATE KEY-----|\b(?:gh[pousr]_[A-Za-z0-9_]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9_-]{20,})|Bearer\s+[A-Za-z0-9._-]{20,}|https?://[^\s/]+:[^\s/@]+@|/(?:Users|home)/[^/\s]+/", re.I)
 
