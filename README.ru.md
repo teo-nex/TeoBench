@@ -27,7 +27,12 @@ python3 -m teobench campaign status --file local-runs/study.json
 
 ## Быстрый старт
 
-Python 3.9+, стандартная библиотека; установка пакетов и ключи API не нужны. Проверка Python-ответов требует **macOS с `/usr/bin/sandbox-exec`** и интерпретатор, установленный вне `/Users` и `/Volumes`. На других ОС оценщик Python намеренно не запускает код без изоляции.
+Python 3.9+ и стандартная библиотека; пакеты Python и ключи API не нужны. Для проверки Python-ответов дополнительно требуется один из вариантов:
+
+- **macOS:** `/usr/bin/sandbox-exec` и интерпретатор, установленный вне `/Users` и `/Volumes`.
+- **Linux:** [Bubblewrap](https://github.com/containers/bubblewrap) (`bwrap` с поддержкой `--disable-userns`), разрешённые непривилегированные user/network namespaces и интерпретатор, чей реальный исполняемый файл находится в `/usr`. Установите Bubblewrap менеджером пакетов дистрибутива (например, `sudo apt-get install bubblewrap`). Checkout и домашний каталог должны находиться вне `/usr`, `/lib` и `/lib64`.
+
+Linux sandbox открывает только системные каталоги runtime для чтения, скрывает домашний каталог, checkout, временные файлы хоста и `/proc`, изолирует сеть, процессы и окружение. При отсутствии или запрете изоляции оценщик отказывает в запуске; небезопасного fallback нет. На других ОС исполнение Python пока не поддерживается.
 
 ```bash
 git clone https://github.com/teo-nex/TeoBench.git

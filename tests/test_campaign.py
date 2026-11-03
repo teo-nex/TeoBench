@@ -33,6 +33,7 @@ class CampaignTests(unittest.TestCase):
 
     def test_one_condition_cannot_be_claimed_or_submitted_as_full_study(self):
         partial=copy.deepcopy(self.primary)
+        partial['benchmark']['grader_sha256']=studies.grader_digest()
         first=partial['records'][0]
         partial['records']=[r for r in partial['records'] if (r['model'],r['effort'])==(first['model'],first['effort'])]
         self.assertEqual(len(partial['records']),30)
@@ -79,6 +80,7 @@ class CampaignTests(unittest.TestCase):
         from scripts import validate_study_pr as validator
         import base64,hashlib
         study=copy.deepcopy(self.primary);study['records']=study['records'][:30];study['study_id']='partial-test'
+        study['benchmark']['grader_sha256']=studies.grader_digest()
         data=json.dumps(study).encode();sha=hashlib.sha1(b'blob '+str(len(data)).encode()+b'\0'+data).hexdigest()
         files=[{'filename':'Easy-Bench/studies/partial-test/study.json','status':'added','sha':sha}]
         blob={'size':len(data),'encoding':'base64','content':base64.b64encode(data).decode()}

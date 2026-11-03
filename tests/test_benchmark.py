@@ -60,19 +60,77 @@ class BenchmarkTests(unittest.TestCase):
 
     def test_os_sandbox_denies_references_and_network(self):
         reference = ROOT/'Easy-Bench/tasks/answers.json'
-        script = 'try:\n open('+repr(str(reference))+').read()\nexcept PermissionError:\n print("BLOCKED")'
+        script = 'try:\n open('+repr(str(reference))+').read()\nexcept (PermissionError, FileNotFoundError):\n print("BLOCKED")'
         result = subprocess.run(sandbox_command(script), capture_output=True, text=True, timeout=5, cwd='/')
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stdout.strip(), 'BLOCKED')
         with socket.socket() as listener:
             listener.bind(('127.0.0.1',0))
-            script = 'import socket\ntry:\n socket.create_connection(("127.0.0.1",'+str(listener.getsockname()[1])+'),timeout=1)\nexcept PermissionError:\n print("BLOCKED")'
+            listener.listen()
+            script = 'import socket\ntry:\n socket.create_connection(("127.0.0.1",'+str(listener.getsockname()[1])+'),timeout=1)\nexcept OSError:\n print("BLOCKED")'
             result = subprocess.run(sandbox_command(script), capture_output=True, text=True, timeout=5, cwd='/')
             self.assertEqual(result.returncode, 0, result.stderr)
             self.assertEqual(result.stdout.strip(), 'BLOCKED')
 
     def test_no_sandbox_means_no_unsafe_fallback(self):
-        with patch('teobench.evaluate.Path.exists', return_value=False), self.assertRaisesRegex(RuntimeError,'OS_sandbox_unavailable'):
+        with patch('teobench.evaluate.Path.exists', return_value=False), patch('teobench.evaluate.shutil.which', return_value=None), self.assertRaisesRegex(RuntimeError,'OS_sandbox_unavailable'):
+            sandbox_command('print(1)')
+
+    @unittest.skipUnless(sys.platform.startswith('linux'), 'Linux filesystem and environment boundary')
+    def test_linux_sandbox_hides_host_files_environment_and_denies_writes(self):
+        with tempfile.TemporaryDirectory() as directory:
+            marker = Path(directory)/'private.txt'
+            marker.write_text('host-only marker')
+            script = '''import os
+import json
+results = []
+for path in PATHS:
+    try:
+        open(path).read()
+        results.append(False)
+    except (PermissionError, FileNotFoundError):
+        results.append(True)
+for path in ["/write-probe", "/usr/write-probe"]:
+    try:
+        open(path, "w").close()
+        results.append(False)
+    except OSError:
+        results.append(True)
+results.append("TEOBENCH_SANDBOX_TEST_SECRET" not in os.environ)
+results.append(not os.path.exists("/proc"))
+results.append(bool(os.statvfs("/").f_flag & os.ST_RDONLY))
+results.append(bool(os.statvfs("/usr").f_flag & os.ST_RDONLY))
+print(json.dumps(results))
+'''.replace('PATHS', repr([str(marker), str(ROOT/'Easy-Bench/tasks/answers.json')]))
+            with patch.dict('os.environ', {'TEOBENCH_SANDBOX_TEST_SECRET':'host-only marker'}):
+                result = subprocess.run(sandbox_command(script), capture_output=True, text=True, timeout=5, cwd='/')
+            self.assertEqual(result.returncode, 0, result.stderr)
+            self.assertEqual(json.loads(result.stdout), [True]*8)
+            self.assertEqual(marker.read_text(), 'host-only marker')
+
+    def test_linux_rejects_missing_bwrap_and_unsupported_runtime(self):
+        with patch('teobench.evaluate.sys.platform', 'linux'):
+            with patch('teobench.evaluate.shutil.which', return_value=None), self.assertRaisesRegex(RuntimeError,'OS_sandbox_unavailable'):
+                sandbox_command('print(1)')
+            with patch('teobench.evaluate.shutil.which', return_value='/usr/bin/bwrap'):
+                with patch('teobench.evaluate.sys.executable', '/opt/python/bin/python3'), self.assertRaisesRegex(RuntimeError,'python_must_be_under_usr'):
+                    sandbox_command('print(1)')
+                with patch('teobench.evaluate.sys.executable', '/usr/bin/python3'), patch('teobench.evaluate.ROOT', Path('/usr/local/teobench/teobench')), self.assertRaisesRegex(RuntimeError,'private_path_overlaps_runtime'):
+                    sandbox_command('print(1)')
+
+    def test_linux_setup_failure_is_infrastructure_failure(self):
+        failed = subprocess.CompletedProcess(['bwrap'], 1, '', 'bwrap: namespace creation denied')
+        with patch('teobench.evaluate.sys.platform', 'linux'), patch('teobench.evaluate.sandbox_command', return_value=['bwrap']), patch('teobench.evaluate.subprocess.run', return_value=failed), self.assertRaisesRegex(RuntimeError,'OS_sandbox_unavailable'):
+            python_outputs('def solve(data): return data', [1])
+
+    def test_macos_command_is_preserved_and_other_platforms_fail_closed(self):
+        with patch('teobench.evaluate.sys.platform', 'darwin'), patch('teobench.evaluate.Path.exists', return_value=True):
+            command = sandbox_command('print(1)')
+            self.assertEqual(command[:2], ['/usr/bin/sandbox-exec', '-p'])
+            self.assertIn('(deny network*)', command[2])
+            self.assertIn('(deny file-write*)', command[2])
+            self.assertEqual(command[-4:], [sys.executable, '-I', '-c', 'print(1)'])
+        with patch('teobench.evaluate.sys.platform', 'win32'), self.assertRaisesRegex(RuntimeError,'OS_sandbox_unavailable'):
             sandbox_command('print(1)')
 
     def test_sql_cannot_write_attach_or_load_extensions(self):

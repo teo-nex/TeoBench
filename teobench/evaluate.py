@@ -2,6 +2,7 @@
 
 import json
 import re
+import shutil
 import sqlite3
 import subprocess
 import sys
@@ -48,6 +49,27 @@ def parse_json(text):
 
 
 def sandbox_command(script):
+    if sys.platform.startswith("linux"):
+        sandbox = shutil.which("bwrap")
+        if sandbox is None:
+            raise RuntimeError("OS_sandbox_unavailable_install_bubblewrap")
+        executable = Path(sys.executable).resolve()
+        if not executable.is_relative_to("/usr"):
+            raise RuntimeError("OS_sandbox_unavailable_python_must_be_under_usr")
+        runtime = [Path(path) for path in ["/usr", "/lib", "/lib64"] if Path(path).exists()]
+        # Only system runtime directories are exposed; never mount private data.
+        for protected in [Path.home().resolve(), ROOT.parent.resolve()]:
+            if any(protected.is_relative_to(path.resolve()) or path.resolve().is_relative_to(protected)
+                   for path in runtime):
+                raise RuntimeError("OS_sandbox_unavailable_private_path_overlaps_runtime")
+        command = [sandbox, "--unshare-user", "--unshare-ipc", "--unshare-pid", "--unshare-net",
+                   "--unshare-uts", "--disable-userns", "--die-with-parent", "--new-session",
+                   "--cap-drop", "ALL", "--clearenv", "--setenv", "LANG", "C.UTF-8"]
+        for path in runtime:
+            command += ["--ro-bind", str(path), str(path)]
+        return command + ["--remount-ro", "/", "--chdir", "/", "--", str(executable), "-I", "-S", "-c", script]
+    if sys.platform != "darwin":
+        raise RuntimeError("OS_sandbox_unavailable_no_unsafe_fallback")
     sandbox = Path("/usr/bin/sandbox-exec")
     if not sandbox.exists():
         raise RuntimeError("OS_sandbox_unavailable_no_unsafe_fallback")
@@ -65,6 +87,8 @@ def python_outputs(source, inputs):
                                input=json.dumps({"source": source, "inputs": inputs}), capture_output=True,
                                text=True, timeout=5, cwd="/", env={"PATH": "/usr/bin:/bin", "LANG": "en_US.UTF-8"})
     if completed.returncode != 0:
+        if sys.platform.startswith("linux") and completed.stderr.startswith("bwrap:"):
+            raise RuntimeError("OS_sandbox_unavailable_bubblewrap_setup_failed")
         raise RuntimeError("sandbox_worker_exit_" + str(completed.returncode))
     if len(completed.stdout) > 2_000_000:
         raise RuntimeError("worker_output_limit")

@@ -6,10 +6,20 @@ permissions:
   contents: read
 jobs:
   verify:
-    runs-on: macos-15
+    strategy:
+      matrix:
+        os: [macos-15, ubuntu-24.04]
+    runs-on: ${{ matrix.os }}
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+      - name: Install Linux sandbox
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y bubblewrap
+      - name: Permit Bubblewrap user namespaces on disposable Ubuntu runner
+        if: runner.os == 'Linux' && runner.environment == 'github-hosted'
+        # Ubuntu's AppArmor restriction otherwise blocks unprivileged bwrap.
+        run: sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
       - name: Verify original dataset
         run: /usr/bin/python3 -m teobench verify
       - name: Test graders and public commands
