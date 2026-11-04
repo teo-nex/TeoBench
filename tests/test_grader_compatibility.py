@@ -91,19 +91,58 @@ class GraderCompatibilityTests(unittest.TestCase):
                     with self.assertRaisesRegex(ValueError, 'historical_study_is_read_only'):
                         studies.publish(path, publish=publish, gh='gh')
 
-    def test_trusted_validator_rejects_new_submissions_using_old_grader(self):
-        study = self.historical_study()
+    def trusted_reports(self, study):
         data = json.dumps(study).encode()
         sha = hashlib.sha1(b'blob ' + str(len(data)).encode() + b'\0' + data).hexdigest()
-        files = [{'filename': 'Easy-Bench/studies/historical-test/study.json',
+        files = [{'filename': 'Easy-Bench/studies/' + study['study_id'] + '/study.json',
                   'status': 'added', 'sha': sha}]
         blob = {'size': len(data), 'encoding': 'base64',
                 'content': base64.b64encode(data).decode()}
         def api(path):
             return files if '/files?' in path else blob
         with patch.object(validator, 'api', side_effect=api):
-            with self.assertRaisesRegex(ValueError, 'historical_study_is_read_only'):
-                validator.validate_files('owner/repo', '1')
+            return validator.validate_files('owner/repo', '1')
+
+    def complete_historical_study(self):
+        from teobench import campaign
+        study = studies.load_json(
+            ROOT / 'Easy-Bench/studies/2026-11-03-reasoning-effort/study.json')
+        by_key = {(r['model'], r['effort'], r['task_id']): r for r in study['records']}
+        for job in campaign.plan()[1]:
+            if job['phase'] != 'primary':
+                row = copy.deepcopy(by_key[job['model'], job['effort'], job['task_id']])
+                row['replicate'] = job['replicate']
+                study['records'].append(row)
+        return study
+
+    def test_trusted_validator_accepts_complete_compatible_history_after_real_regrade(self):
+        study = self.complete_historical_study()
+        original = copy.deepcopy(study)
+        reports = self.trusted_reports(study)
+        self.assertEqual(len(reports), 1)
+        self.assertTrue(reports[0]['answers_regraded'])
+        self.assertEqual(reports[0]['recorded_grader_sha256'], LEGACY_GRADER)
+        self.assertEqual(reports[0]['regraded_with_sha256'], PORTABLE_GRADER)
+        self.assertEqual(reports[0]['campaign']['status'], 'COMPLETE')
+        self.assertEqual(study, original)
+
+    def test_trusted_validator_rejects_incomplete_compatible_history(self):
+        with self.assertRaisesRegex(ValueError, 'incomplete_full_campaign'):
+            self.trusted_reports(self.historical_study())
+
+    def test_trusted_validator_rejects_unknown_grader_before_regrading(self):
+        study = self.historical_study()
+        study['benchmark']['grader_sha256'] = '0' * 64
+        with patch.object(studies, 'grade', side_effect=AssertionError('must not grade')):
+            with self.assertRaisesRegex(ValueError, 'benchmark_or_grader_version_mismatch'):
+                self.trusted_reports(study)
+
+    def test_trusted_validator_rejects_forged_historical_verdict(self):
+        study = self.complete_historical_study()
+        # First record is a reasoning task: reject immediately, without sandbox work.
+        study['records'][0]['evaluation']['semantic_pass'] = not study['records'][0]['evaluation']['semantic_pass']
+        with self.assertRaisesRegex(ValueError, 'regrade_mismatch'):
+            self.trusted_reports(study)
 
     def test_statistics_keep_grader_versions_separate_without_claiming_a_regrade(self):
         historical = studies.load_json(
