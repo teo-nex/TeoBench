@@ -132,10 +132,21 @@ class GraderCompatibilityTests(unittest.TestCase):
     def test_statistics_cli_regrades_all_1050_archived_results_without_rewriting(self):
         source = ROOT / 'Easy-Bench/studies/2026-11-03-reasoning-effort/study.json'
         original = source.read_bytes()
-        old_summary = studies.load_json(ROOT / 'Easy-Bench/statistics/summary.json')
+        historical = studies.load_json(source)
+        expected = {}
+        for row in historical['records']:
+            counts = expected.setdefault((row['model'], row['effort']), [0, 0])
+            counts[0] += bool(row['evaluation'] and row['evaluation']['semantic_pass'])
+            counts[1] += row['transport_error'] is not None
         with tempfile.TemporaryDirectory() as directory:
+            # This is an archive compatibility test, independent of how many
+            # community reports and summary groups have since been accepted.
+            archive = Path(directory) / 'studies' / historical['study_id']
+            archive.mkdir(parents=True)
+            (archive / 'study.json').write_bytes(original)
             output = Path(directory) / 'summary.json'
             result = subprocess.run([sys.executable, '-m', 'teobench', 'stats',
+                                     '--directory', str(archive.parent),
                                      '--output', str(output)], cwd=ROOT,
                                     capture_output=True, text=True, timeout=600 if sys.platform == "win32" else 180)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
@@ -147,10 +158,13 @@ class GraderCompatibilityTests(unittest.TestCase):
             for group in report['groups']:
                 self.assertEqual(group['grader_sha256'], LEGACY_GRADER)
                 self.assertEqual(group['regraded_with_sha256'], PORTABLE_GRADER)
-            strip_provenance = lambda groups: [
-                {key: value for key, value in group.items() if key != 'regraded_with_sha256'}
-                for group in groups]
-            self.assertEqual(strip_provenance(report['groups']), strip_provenance(old_summary['groups']))
+                self.assertEqual(group['access_route'], historical['access_route'])
+                self.assertEqual(group['environment'], historical['environment'])
+                passed, errors = expected[group['model'], group['effort']]
+                for key in ['median_pass_rate', 'mean_pass_rate', 'min_pass_rate', 'max_pass_rate']:
+                    self.assertEqual(group[key], passed / 30)
+                self.assertEqual(group['transport_errors'], errors)
+                self.assertEqual((group['studies'], group['runs'], group['task_results']), (1, 1, 30))
             with output.with_suffix('.csv').open(newline='') as handle:
                 rows = list(csv.DictReader(handle))
             self.assertEqual(len(rows), 35)
