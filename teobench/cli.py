@@ -77,6 +77,7 @@ def main(argv=None):
     create.add_argument("--file", type=Path, required=True)
     create.add_argument("--access-route", required=True, help="provider/gateway route, without credentials")
     create.add_argument("--environment", required=True, help="OS/runtime and relevant tool settings; no host/user names")
+    create.add_argument("--campaign-profile", help="explicit trusted campaign profile; creates schema 1.1")
     record = actions.add_parser("record")
     record.add_argument("--file", type=Path, required=True)
     record.add_argument("--task", required=True)
@@ -87,6 +88,8 @@ def main(argv=None):
     record.add_argument("--history", type=Path)
     record.add_argument("--seconds", type=float)
     record.add_argument("--transport-error")
+    record.add_argument("--attempt", type=int, default=0, help="schema 1.1 non-scoring retry number; 0 records the controlled observation")
+    record.add_argument("--started-at", help="timezone-aware actual retry start time; required with --attempt")
     for action in ["validate", "submit"]:
         command = actions.add_parser(action)
         command.add_argument("--file", type=Path, required=True)
@@ -95,7 +98,8 @@ def main(argv=None):
             command.add_argument("--gh", help="path to an authenticated GitHub CLI")
     campaign = sub.add_parser("campaign", help="plan and check the FULL 7-model x 5-effort study")
     campaign_actions = campaign.add_subparsers(dest="action", required=True)
-    campaign_actions.add_parser("plan")
+    campaign_plan = campaign_actions.add_parser("plan")
+    campaign_plan.add_argument("--profile", help="trusted campaign profile (default: original seven-model study)")
     for action in ["status", "next"]:
         command = campaign_actions.add_parser(action)
         command.add_argument("--file", type=Path, required=True)
@@ -111,9 +115,11 @@ def main(argv=None):
         if args.command == "campaign":
             from . import campaign, studies
             if args.action == "plan":
-                config, jobs = campaign.plan()
+                config, jobs = campaign.plan(args.profile)
                 emit({"configuration": config, "planned_trials": len(jobs),
-                      "primary_trials": 1050, "pilot_trials": 35, "control_trials": 42,
+                      "primary_trials": sum(j['phase'] == 'primary' for j in jobs),
+                      "pilot_trials": sum(j['phase'] == 'pilot' for j in jobs),
+                      "control_trials": sum(j['phase'] == 'controls' for j in jobs),
                       "next": "Execute all configured models/efforts through your model interfaces; CLI inspection does not run inference."})
                 return 0
             value = studies.load_json(args.file)
@@ -136,7 +142,7 @@ def main(argv=None):
                 with studies.study_lock(args.file):
                     if args.file.exists():
                         raise ValueError("study_file_already_exists")
-                    value = studies.create(args.id, args.access_route, args.environment)
+                    value = studies.create(args.id, args.access_route, args.environment, args.campaign_profile)
                     studies.save(args.file, value)
                 emit({"created": str(args.file), "records": 0})
             elif args.action == "record":
@@ -146,7 +152,7 @@ def main(argv=None):
                     value = studies.load_json(args.file)
                     studies.validate(value, regrade=False)
                     studies.add_record(value, args.task, args.model, args.effort, answer, history,
-                        args.replicate, args.seconds, args.transport_error)
+                        args.replicate, args.seconds, args.transport_error, args.attempt, args.started_at)
                     studies.save(args.file, value)
                 emit(studies.validate(value, regrade=False))
             elif args.action == "validate":

@@ -144,7 +144,7 @@ def load_json(path):
                       parse_constant=lambda value: (_ for _ in ()).throw(ValueError("non_finite_json")))
 
 
-def create(study_id, access_route, environment):
+def create(study_id, access_route, environment, campaign_profile=None):
     from .cli import load
     if not SLUG.fullmatch(study_id):
         raise ValueError("study_id_must_be_3_to_80_lowercase_letters_digits_hyphens")
@@ -160,12 +160,18 @@ def create(study_id, access_route, environment):
         "method": "All attempts retained; one replicate is a complete set of 30 tasks. No best-of selection.",
         "records": [],
     }
+    if campaign_profile is not None:
+        from .campaign import plan
+        plan(campaign_profile)  # Fixed trusted allowlist, never a user-supplied path.
+        value['schema_version'] = '1.1'
+        value['campaign_profile'] = campaign_profile
+        value['additional_attempts'] = []
     reject_secrets(value)
     return value
 
 
 def add_record(study, task_id, model, effort, answer, history, replicate=0,
-               elapsed_seconds=None, transport_error=None):
+               elapsed_seconds=None, transport_error=None, attempt=0, started_at=None):
     from .cli import load
     require_current_grader(study)
     tasks, answers, _ = load()
@@ -177,9 +183,19 @@ def add_record(study, task_id, model, effort, answer, history, replicate=0,
         "replicate": replicate, "answer": answer, "tool_history": history,
         "elapsed_seconds": elapsed_seconds, "transport_error": transport_error,
         "evaluation": result}
-    candidate = dict(study, records=study['records']+[row])
+    if type(attempt) is not int or not 0 <= attempt <= 100:
+        raise ValueError('invalid_additional_attempt')
+    field = 'records'
+    if attempt:
+        if study['schema_version'] != '1.1':
+            raise ValueError('additional_attempts_require_schema_1_1')
+        field = 'additional_attempts'
+        row.update(attempt=attempt, started_at=started_at)
+    elif started_at is not None:
+        raise ValueError('started_at_only_for_additional_attempt')
+    candidate = dict(study, **{field:study[field]+[row]})
     validate(candidate, regrade=False)
-    study['records'].append(row)
+    study[field].append(row)
     return study
 
 
@@ -187,10 +203,19 @@ def validate(study, regrade=True):
     from .cli import load
     tasks, answers, manifest = load()
     task_map = {t["id"]: t for t in tasks}
-    strict_object(study, ["schema_version", "study_id", "created_at", "benchmark", "environment",
-                          "access_route", "method", "records"], "study")
-    if study["schema_version"] != "1.0" or not isinstance(study["study_id"], str) or not SLUG.fullmatch(study["study_id"]):
+    version = study.get('schema_version') if isinstance(study, dict) else None
+    fields = ["schema_version", "study_id", "created_at", "benchmark", "environment",
+              "access_route", "method", "records"]
+    if version == '1.1':
+        fields.extend(['campaign_profile', 'additional_attempts'])
+    strict_object(study, fields, "study")
+    if not isinstance(version, str) or version not in {'1.0', '1.1'} or not isinstance(study["study_id"], str) or not SLUG.fullmatch(study["study_id"]):
         raise ValueError("unsupported_schema_or_study_id")
+    if version == '1.1':
+        from .campaign import plan
+        if not isinstance(study['campaign_profile'], str):
+            raise ValueError('unknown_campaign_profile')
+        plan(study['campaign_profile'])
     text(study["created_at"], 80, "created_at")
     parsed = datetime.datetime.fromisoformat(study["created_at"].replace("Z", "+00:00"))
     if parsed.tzinfo is None:
@@ -213,25 +238,47 @@ def validate(study, regrade=True):
     rows = study["records"]
     if not isinstance(rows, list) or len(rows) > 3000:
         raise ValueError("records_must_be_array_up_to_3000")
+    additional = study['additional_attempts'] if version == '1.1' else []
+    if not isinstance(additional, list) or len(rows)+len(additional) > 3000:
+        raise ValueError('records_must_be_array_up_to_3000')
     reject_secrets(study)
     if len((json.dumps(study, ensure_ascii=False, indent=2, allow_nan=False)+'\n').encode('utf-8')) > MAX_BYTES:
         raise ValueError("study_exceeds_8MB")
     seen = set()
+    attempt_seen = set()
+    attempt_numbers = collections.defaultdict(set)
     groups = collections.defaultdict(list)
-    for row in rows:
-        strict_object(row, ["task_id", "model", "effort", "replicate", "answer", "tool_history",
-                            "elapsed_seconds", "transport_error", "evaluation"], "record")
+    for row, is_additional in [(r, False) for r in rows]+[(r, True) for r in additional]:
+        row_fields = ["task_id", "model", "effort", "replicate", "answer", "tool_history",
+                      "elapsed_seconds", "transport_error", "evaluation"]
+        if is_additional:
+            row_fields.extend(['attempt', 'started_at'])
+        strict_object(row, row_fields, "record")
         if not isinstance(row["task_id"], str) or row["task_id"] not in task_map:
             raise ValueError("unknown_task")
         text(row["model"], 200, "model")
-        if not isinstance(row["effort"], str) or row["effort"] not in EFFORTS:
+        efforts = EFFORTS | {'ultra'} if version == '1.1' else EFFORTS
+        if not isinstance(row["effort"], str) or row["effort"] not in efforts:
             raise ValueError("unknown_effort")
         if type(row["replicate"]) is not int or not 0 <= row["replicate"] <= 100:
             raise ValueError("invalid_replicate")
         identity = row["model"], row["effort"], row["replicate"], row["task_id"]
-        if identity in seen:
-            raise ValueError("duplicate_task_in_condition")
-        seen.add(identity)
+        if is_additional:
+            if identity not in seen or type(row['attempt']) is not int or not 1 <= row['attempt'] <= 100:
+                raise ValueError('invalid_additional_attempt')
+            attempt_key = identity+(row['attempt'],)
+            if attempt_key in attempt_seen:
+                raise ValueError('duplicate_additional_attempt')
+            attempt_seen.add(attempt_key)
+            attempt_numbers[identity].add(row['attempt'])
+            text(row['started_at'], 80, 'attempt_started_at')
+            timestamp = datetime.datetime.fromisoformat(row['started_at'].replace('Z', '+00:00'))
+            if timestamp.tzinfo is None:
+                raise ValueError('attempt_started_at_requires_timezone')
+        else:
+            if identity in seen:
+                raise ValueError("duplicate_task_in_condition")
+            seen.add(identity)
         if not isinstance(row["answer"], str) or len(row["answer"]) > 50_000:
             raise ValueError("answer_must_be_text_up_to_50000_chars")
         secs = row["elapsed_seconds"]
@@ -241,7 +288,9 @@ def validate(study, regrade=True):
         if error is not None:
             text(error, 300, "transport_error")
         history = row["tool_history"]
-        if not isinstance(history, list) or len(history) > 100:
+        if not isinstance(history, list) or len(history) > (256 if version == '1.1' else 100):
+            raise ValueError("invalid_tool_history")
+        if version == '1.1' and sum(r.get('ok') is True for r in history if isinstance(r, dict)) > 100:
             raise ValueError("invalid_tool_history")
         if history and task_map[row["task_id"]]["family"] != "tools":
             raise ValueError("tool_history_only_valid_for_tools_tasks")
@@ -249,8 +298,14 @@ def validate(study, regrade=True):
             strict_object(receipt, ["name", "arguments", "ok", "output"], "tool_receipt")
             if receipt["name"] != "lookup" or type(receipt["ok"]) is not bool:
                 raise ValueError("invalid_tool_receipt")
-            strict_object(receipt["arguments"], ["id"], "tool_arguments")
-            text(receipt["arguments"]["id"], 100, "lookup_id")
+            if version == '1.1' and receipt['ok'] is False:
+                # A failed real call may have missing, extra or mistyped arguments.
+                # Keep the original object; the grader still fails this trace.
+                if not isinstance(receipt['arguments'], dict):
+                    raise ValueError('invalid_failed_tool_arguments')
+            else:
+                strict_object(receipt["arguments"], ["id"], "tool_arguments")
+                text(receipt["arguments"]["id"], 100, "lookup_id")
         if error is None:
             evaluation = row["evaluation"]
             strict_object(evaluation, ["semantic_pass", "strict_pass", "passed_cases", "total_cases", "error"], "evaluation")
@@ -277,9 +332,13 @@ def validate(study, regrade=True):
                     raise ValueError("regrade_mismatch: " + row["task_id"])
         elif row["evaluation"] is not None:
             raise ValueError("transport_failure_must_not_claim_grade")
-        groups[identity[:3]].append(row)
+        if not is_additional:
+            groups[identity[:3]].append(row)
+    for numbers in attempt_numbers.values():
+        if numbers != set(range(1, max(numbers)+1)):
+            raise ValueError('additional_attempt_sequence_has_gaps')
     complete = [rows for rows in groups.values() if {r["task_id"] for r in rows} == set(task_map)]
-    return {"status": "PASS", "study_id": study["study_id"], "records": len(rows),
+    report = {"status": "PASS", "study_id": study["study_id"], "records": len(rows),
         "conditions": len(groups), "complete_runs": len(complete),
         "incomplete_runs": len(groups)-len(complete),
         "semantic_pass": sum(bool(r["evaluation"] and r["evaluation"]["semantic_pass"]) for r in study["records"]),
@@ -288,6 +347,9 @@ def validate(study, regrade=True):
         "recorded_grader_sha256": recorded_grader,
         "regraded_with_sha256": current_grader if regrade else None,
         "model_identity_and_execution_trace": "submitter-reported; not independently attested"}
+    if version == '1.1':
+        report.update(campaign_profile=study['campaign_profile'], additional_attempts=len(additional))
+    return report
 
 
 def statistics_report(paths, regrade=True):
