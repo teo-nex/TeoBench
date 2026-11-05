@@ -1,0 +1,50 @@
+{
+  "schema_version": "medium-client-validation-1",
+  "kind": "infrastructure_acceptance_not_benchmark_results",
+  "date": "2026-11-05",
+  "source_commit": "4525d14ba6fe99d75aa2a080776988ec20261dd6",
+  "status": "CLIENT_AND_CONTAINER_ACCEPTED",
+  "platform": "win32",
+  "python_version": "3.13.7",
+  "node_version": "24.13.1",
+  "pi_version": "0.85.1",
+  "engine": "docker-linux-amd64",
+  "profile": "pi-medium-sandbox-v1",
+  "profile_sha256": "f449952b5b5accd502f3ea0d4a9d0e125e9d945a3768cc9e04affb7f319abf25",
+  "image_id": "sha256:94a8fee35252d06ab75856f15f12c7bae67b10e8a6da93c7fded82b2610926cd",
+  "checks": {
+    "pi_install_and_startup": "PASS",
+    "doctor_python_sql_sandboxes": "PASS",
+    "automated_tests": {
+      "test_setup_pi.py": 5,
+      "test_medium.py": 15,
+      "test_pi_runner.py": 18,
+      "total_passed": 38
+    },
+    "exact_model_effort_preflight": {
+      "conditions": 35,
+      "passed": 35,
+      "model_requests": 0
+    },
+    "real_pi_container_tool_smoke": {
+      "status": "SMOKE_PASS",
+      "provider_kind": "scripted_localhost_fixture",
+      "http_requests_to_fixture": 2,
+      "artifact_verified": true,
+      "real_model_requests": 0
+    },
+    "selection_reproduced_on_windows": {
+      "status": "PASS",
+      "tasks": 100,
+      "manifest_payload_sha256": "2439d613b79e0979599ebc9151016e7a829a41f71e748c18c190f63523f478f3"
+    }
+  },
+  "primary_attempts": 0,
+  "full_campaign_accepted": false,
+  "remaining_gates": [
+    "authorized_remote_model_gateway_access",
+    "five_source_evaluator_adapters_and_acceptance",
+    "task_environment_capacity_and_digest_pins",
+    "quota_safe_campaign_launch"
+  ]
+}

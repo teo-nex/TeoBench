@@ -57,7 +57,8 @@ def run(*, output, transport_file, key_env='TEOBENCH_GATEWAY_KEY',
     routing=transport(transport_file,key_env)
     if not os.environ.get(key_env):raise ValueError('BLOCKED: gateway credential missing from memory')
     profile=json.loads(PROFILE.read_text())
-    profile_hash=hashlib.sha256(b'\0'.join(p.read_bytes() for p in (PROFILE,WORKER,Path(__file__)))).hexdigest()
+    profile_hash=hashlib.sha256(b'\0'.join(p.read_bytes() for p in (
+        PROFILE,WORKER,Path(__file__),WORKER.with_name('pi_failure.mjs')))).hexdigest()
     prefix=['--connection',connection] if connection else []
     engine_env={k:v for k,v in os.environ.items() if k in {
         'PATH','HOME','XDG_CONFIG_HOME','XDG_DATA_HOME','XDG_RUNTIME_DIR','TMPDIR','LANG','LC_ALL',

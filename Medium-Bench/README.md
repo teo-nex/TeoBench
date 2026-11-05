@@ -1,7 +1,9 @@
 # TeoBench Medium — public 100-task selection (preparation)
 
-**Not yet runnable or runtime-accepted. No Medium model results exist in this
-branch.** Easy's `RUN_TEO_BENCH` command still runs Easy; it does not run this set.
+**The full Medium campaign is not yet runnable or runtime-accepted. No Medium
+model results exist in this branch.** The clean Pi/container client has passed
+Windows acceptance; task evaluators remain pending. Easy's `RUN_TEO_BENCH`
+command still runs Easy; it does not run this set.
 
 This freezes the proposed public-source composite before any scored inference:
 
@@ -84,8 +86,26 @@ The default engine is Podman; `--engine docker` supports an existing Docker
 engine. `--connection NAME` explicitly selects a Podman connection without
 changing the default. `--image IMAGE` must already exist locally; the smoke
 resolves and uses its immutable local image ID. The smoke image must provide
-Python 3, a POSIX shell and `timeout`. Windows/Linux execution of this new
-scaffold still requires live acceptance; it is not established by CLI support.
+Python 3, a POSIX shell and `timeout`. The scaffold was exercised on Windows
+with Docker's Linux engine and Pi 0.85.1: 38 automated tests, all 35 model/effort
+selections without inference, and a real tool/file-write smoke using a scripted
+localhost provider. The latter is **not a model response or benchmark score**.
+See the [sanitized Windows acceptance record](validation/windows-client-4525d14.json).
+All seven exact models also passed a separate live Windows Pi/container smoke
+at `high` through a local OmniRoute gateway. See the
+[gateway acceptance record](validation/windows-gateway-20261105.json).
+This does not establish live access at the other four effort levels or provide
+any scores for the selected tasks. The five source evaluators, task environment
+capacity and campaign quota guard still require acceptance. Linux execution of
+this new scaffold is not established by these Windows checks.
+
+Transport failures retain fixed diagnostic categories, including session-limit,
+quota, authentication and model-access errors, without saving raw provider error
+messages. An OmniRoute API key's `maxSessions` counts registered conversations;
+it is not the scheduler's concurrent-request limit. A cap of four blocked the
+fifth fresh Pi session during acceptance. Use a separate admission limit for
+parallel requests; do not weaken model or connection restrictions to fix it.
+All initial infrastructure failures remain separate from benchmark observations.
 
 This branch provides the frozen selection, integrity checks and an experimental
 clean Pi/container smoke; **it does not yet provide the five complete task
@@ -110,3 +130,19 @@ preserved unless replacement is explicitly requested. Native npm warnings are
 logged separately instead of being treated as failed installation by
 PowerShell 5. It invokes npm's JavaScript entry point directly using native
 Node, without invoking `.cmd`/`.ps1` wrappers or disabling script policy.
+
+With an existing image that provides Python 3, `sh` and `timeout`, validate the
+client without model access or quota usage:
+
+```powershell
+py -3 scripts/check_medium_pi_container.py --engine docker --image YOUR_EXISTING_IMAGE --output local-runs/pi-preflight --preflight-all
+py -3 scripts/check_medium_pi_container.py --engine docker --image YOUR_EXISTING_IMAGE --output local-runs/pi-scripted-smoke
+```
+
+Use a new output directory each time to preserve earlier receipts. These
+commands do not pull images, install an engine, run any of the 100 tasks or
+establish subscription quota. Model routing must be explicitly configured for
+the authorized gateway; do not fall back to another account, model or paid API
+when it is unreachable. A host loopback URL refers to the machine running Pi,
+so copying a routing file from another computer does not make its gateway
+reachable.

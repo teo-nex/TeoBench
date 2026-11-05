@@ -1,0 +1,161 @@
+{
+  "schema_version": "medium-client-validation-1",
+  "kind": "infrastructure_acceptance_not_benchmark_results",
+  "date": "2026-11-05",
+  "source_base_commit": "4525d14ba6fe99d75aa2a080776988ec20261dd6",
+  "source_files_sha256": {
+    "Medium-Bench/pi-sandbox-v1.json": "48e4667a203ce6a0843e1fe1371ec481e72cf64a5e1c7b356819bc02e4cd2e1c",
+    "teobench/medium_pi_trial.mjs": "493a153cf23ae3e1bb6cc559d38a9b099ee38a51721509e452d7d594fb0c5a10",
+    "teobench/medium_pi_smoke.py": "acc9d07d37266992f522e85427e39904ac54280c35aab54f1b2aef6680c70774",
+    "teobench/pi_failure.mjs": "c8bf1117e3c9142bfe06d80e1db96e410e0f8be16b266c4743eaa247224d4bcf"
+  },
+  "platform": "win32",
+  "engine": "docker-linux-amd64",
+  "pi_version": "0.85.1",
+  "gateway_version": "3.8.50",
+  "provider": "codex",
+  "profile": "pi-medium-sandbox-v1",
+  "profile_sha256": "3526f3964da4339cbcc808fb472d122cf9ec7a920b94fb6a1b581f4c951710c3",
+  "status": "SEVEN_MODEL_PI_TOOL_SMOKES_PASS",
+  "live_effort": "high",
+  "live_results": [
+    {
+      "model": "gpt-5.6-luna",
+      "effort": "high",
+      "status": "SMOKE_PASS",
+      "conditions": [
+        {
+          "model": "gpt-5.6-luna",
+          "effort": "high",
+          "status": "COMPLETED",
+          "requests": 3,
+          "seconds": 18.62
+        }
+      ],
+      "artifact_verified": true
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "high",
+      "status": "SMOKE_PASS",
+      "conditions": [
+        {
+          "model": "gpt-6-luna",
+          "effort": "high",
+          "status": "COMPLETED",
+          "requests": 3,
+          "seconds": 19.08
+        }
+      ],
+      "artifact_verified": true
+    },
+    {
+      "model": "gpt-5.6-terra",
+      "effort": "high",
+      "status": "SMOKE_PASS",
+      "conditions": [
+        {
+          "model": "gpt-5.6-terra",
+          "effort": "high",
+          "status": "COMPLETED",
+          "requests": 2,
+          "seconds": 13.48
+        }
+      ],
+      "artifact_verified": true
+    },
+    {
+      "model": "gpt-6.1-terra",
+      "effort": "high",
+      "status": "SMOKE_PASS",
+      "conditions": [
+        {
+          "model": "gpt-6.1-terra",
+          "effort": "high",
+          "status": "COMPLETED",
+          "requests": 2,
+          "seconds": 12.74
+        }
+      ],
+      "artifact_verified": true
+    },
+    {
+      "model": "gpt-5.6-sol",
+      "effort": "high",
+      "status": "SMOKE_PASS",
+      "conditions": [
+        {
+          "model": "gpt-5.6-sol",
+          "effort": "high",
+          "status": "COMPLETED",
+          "requests": 2,
+          "seconds": 12.67
+        }
+      ],
+      "artifact_verified": true
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "high",
+      "status": "SMOKE_PASS",
+      "conditions": [
+        {
+          "model": "gpt-6.1-sol",
+          "effort": "high",
+          "status": "COMPLETED",
+          "requests": 2,
+          "seconds": 12.73
+        }
+      ],
+      "artifact_verified": true
+    },
+    {
+      "model": "gpt-6-astra",
+      "effort": "high",
+      "status": "SMOKE_PASS",
+      "conditions": [
+        {
+          "model": "gpt-6-astra",
+          "effort": "high",
+          "status": "COMPLETED",
+          "requests": 2,
+          "seconds": 13.76
+        }
+      ],
+      "artifact_verified": true
+    }
+  ],
+  "live_gateway_requests": 16,
+  "gateway_checks": {
+    "health_http": 200,
+    "unauthenticated_inference_http": 401,
+    "unlisted_model_inference_http": 403,
+    "provider_connections": 1,
+    "key_model_policy": "seven-explicit-models",
+    "key_connection_policy": "one-explicit-connection",
+    "compression": false,
+    "response_cache": "bypass",
+    "gateway_retries": 0,
+    "cloud_sync": false
+  },
+  "catalog_does_not_advertise_all_working_explicit_routes": true,
+  "no_ssh_tunnel": true,
+  "no_personal_pi_profile": true,
+  "no_host_mounts": true,
+  "candidate_network": "none",
+  "initial_configuration_failure": {
+    "category": "session_limit",
+    "gateway_rejections": 4,
+    "fix": "Remove historical conversation cap on dedicated key; preserve independent request admission and routing restrictions",
+    "initial_receipts_preserved": true,
+    "benchmark_observations": 0
+  },
+  "primary_attempts": 0,
+  "full_campaign_accepted": false,
+  "live_all_35_conditions_verified": false,
+  "remaining_gates": [
+    "five_source_evaluator_adapters_and_acceptance",
+    "task_environment_capacity_and_digest_pins",
+    "quota_safe_campaign_launch_without_credit_spending"
+  ]
+}

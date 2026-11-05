@@ -4,10 +4,11 @@ import fs from 'node:fs';
 import {spawn} from 'node:child_process';
 import {pathToFileURL} from 'node:url';
 import {createHash} from 'node:crypto';
+import {providerFailure} from './pi_failure.mjs';
 
 const input = JSON.parse(fs.readFileSync(0, 'utf8'));
 const hash = x => createHash('sha256').update(x).digest('hex');
-let session, fatal, started = false, requests = 0;
+let session, fatal, failure, started = false, requests = 0;
 const history = [];
 const save = extra => {
   fs.writeFileSync(input.resultPath+'.tmp', JSON.stringify({
@@ -107,11 +108,15 @@ try {
     await session.prompt(input.prompt,{expandPromptTemplates:false});
     const last = session.state.messages.at(-1);
     if (fatal) blocked(fatal);
-    if (!started || last?.role !== 'assistant' || last.stopReason !== 'stop') blocked('unfinished_response');
+    if (!started || last?.role !== 'assistant' || last.stopReason !== 'stop') {
+      failure = providerFailure(last);
+      blocked('unfinished_response');
+    }
     save({status:'COMPLETED',answer:last.content.filter(c => c.type === 'text').map(c => c.text).join('')});
   }
 } catch (error) {
   const code = known.has(error.message) ? error.message : 'pi_worker_error';
-  save({status: started ? 'TRANSPORT_ERROR' : 'BLOCKED',error:code});
+  save({status: started ? 'TRANSPORT_ERROR' : 'BLOCKED',error:code,
+    ...(failure ? {provider_failure: failure} : {})});
   process.exitCode = 1;
 } finally {session?.dispose();}
