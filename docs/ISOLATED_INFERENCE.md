@@ -134,6 +134,10 @@ campaign model IDs are accepted. Credentials, headers, commands, compatibility
 settings, prompt and generation overrides are rejected. Use a matching existing
 Pi auth-store provider entry. The transport hash is in private receipts and the
 study's route binding; publishing a hash does not publish the endpoint or key.
+A fixed identity map declares all five campaign effort labels, including `xhigh`
+and `max`; the adapter never translates them into a different effort. Provider
+catalog entries that remap an effort are blocked. This does not prove that a
+gateway or backend accepts or honors the declared label.
 A gateway remains an explicit research condition, not independent attestation.
 
 ## Codex and other adapters

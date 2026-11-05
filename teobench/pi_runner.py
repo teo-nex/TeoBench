@@ -129,6 +129,7 @@ def transport_config(path, provider, profile):
         raise ValueError('BLOCKED: transport must list exact campaign model IDs')
     return {'providers': {provider: {'baseUrl': value['base_url'], 'api': value['api'],
         'models': [{'id': m, 'reasoning': True, 'input': ['text'],
+                    'thinkingLevelMap': {effort: effort for effort in config['efforts']},
                     'contextWindow': profile['context_window'], 'maxTokens': profile['max_output_tokens'],
                     'cost': {'input': 0,'output': 0,'cacheRead': 0,'cacheWrite': 0}} for m in models]}}}
 

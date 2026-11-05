@@ -218,6 +218,24 @@ class PiInstalledIntegrationTests(unittest.TestCase):
         self.assertFalse(result['inference_started'])
         self.assertEqual(self.requests,[])
 
+    def test_all_campaign_efforts_select_exactly_and_extended_efforts_reach_wire(self):
+        from teobench import campaign
+        config,_=campaign.plan()
+        routing=json.loads(self.transport.read_text());routing['models']=config['models']
+        self.transport.write_text(json.dumps(routing))
+        for model in config['models']:
+            for effort in config['efforts']:
+                with self.subTest(model=model,effort=effort):
+                    result=pi_runner.run('R01',model,effort,'benchmark',pi_package=self.package,
+                        auth_file=self.auth,transport=self.transport,preflight=True)
+                    self.assertEqual(result['status'],'PREFLIGHT_PASS',result)
+        self.assertEqual(self.requests,[])
+        for effort in ('xhigh','max'):
+            result=pi_runner.run('R01','gpt-6-luna',effort,'benchmark',pi_package=self.package,
+                auth_file=self.auth,transport=self.transport)
+            self.assertEqual(result['status'],'COMPLETED',result)
+            self.assertEqual(self.requests[-1]['reasoning_effort'],effort)
+
     def test_tool_task_executes_trusted_lookup_and_retains_receipts(self):
         self.tool_mode=True
         result=self.run_trial('T01')
@@ -234,4 +252,14 @@ class PiInstalledIntegrationTests(unittest.TestCase):
         result=self.run_trial()
         self.assertEqual(result['status'],'BLOCKED',result)
         self.assertEqual(result['blocker'],'exact_model_unavailable')
+        self.assertEqual(self.requests,[])
+
+    def test_provider_catalog_effort_remapping_is_blocked_before_inference(self):
+        profile=json.loads(pi_runner.PROFILE.read_text())
+        routing=pi_runner.transport_config(self.transport,'benchmark',profile)
+        routing['providers']['benchmark']['models'][0]['thinkingLevelMap']['high']='low'
+        with patch('teobench.pi_runner.transport_config',return_value=routing):
+            result=self.run_trial()
+        self.assertEqual(result['status'],'BLOCKED',result)
+        self.assertEqual(result['blocker'],'effort_mapping_unsupported')
         self.assertEqual(self.requests,[])

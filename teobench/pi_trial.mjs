@@ -29,6 +29,8 @@ try {
   });
   const model = runtime.getModel(input.provider, input.model);
   if (!model || model.id !== input.model || model.provider !== input.provider) blocked('exact_model_unavailable');
+  const mappedEffort = model.thinkingLevelMap?.[input.effort];
+  if (mappedEffort !== undefined && mappedEffort !== input.effort) blocked('effort_mapping_unsupported');
   const allowed = input.task.family === 'tools' ? ['lookup'] : [];
   const lookup = input.task.tools?.[0];
   const tool = lookup && sdk.defineTool({
@@ -100,7 +102,7 @@ try {
   }
 } catch (error) {
   // Error messages may contain provider/account data. Publish stable classifications only.
-  const known = new Set(['unsupported_pi_version','exact_model_unavailable','model_or_effort_substituted',
+  const known = new Set(['unsupported_pi_version','exact_model_unavailable','model_or_effort_substituted','effort_mapping_unsupported',
     'profile_contaminated','request_profile_mismatch','tool_budget_exceeded','round_budget_exceeded',
     'invalid_lookup','unfinished_response']);
   const code = known.has(error.message) ? error.message : 'pi_worker_error';
