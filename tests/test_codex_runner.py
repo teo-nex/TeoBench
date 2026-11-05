@@ -84,8 +84,8 @@ class CodexPolicyTests(unittest.TestCase):
         with patch.dict(os.environ, {'HOME':'/original-home','CODEX_HOME':'/original-profile',
                 'NODE_OPTIONS':'--import private-hook','OPENAI_API_KEY':'private','CODEX_THREAD_ID':'old-thread'}):
             env=runner.clean_environment(Path('/temporary-home'),Path('/temporary-profile'))
-            self.assertEqual(env['HOME'],'/temporary-home')
-            self.assertEqual(env['CODEX_HOME'],'/temporary-profile')
+            self.assertEqual(env['HOME'],str(Path('/temporary-home')))
+            self.assertEqual(env['CODEX_HOME'],str(Path('/temporary-profile')))
             self.assertNotIn('NODE_OPTIONS',env);self.assertNotIn('OPENAI_API_KEY',env)
             self.assertNotIn('CODEX_THREAD_ID',env)
             self.assertEqual(os.environ['HOME'],'/original-home')
