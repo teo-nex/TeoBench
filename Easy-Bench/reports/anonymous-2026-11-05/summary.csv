@@ -1,0 +1,8 @@
+model,low,medium,high,xhigh,max,primary_passed,primary_trials,transport_errors,wrong_answers
+gpt-6-astra,29,30,30,30,29,148,150,1,1
+gpt-6.1-sol,28,29,30,30,29,146,150,1,3
+gpt-6.1-terra,27,28,28,30,28,141,150,2,7
+gpt-5.6-terra,27,28,26,29,27,137,150,2,11
+gpt-5.6-sol,26,27,27,28,27,135,150,0,15
+gpt-5.6-luna,25,26,27,28,28,134,150,2,14
+gpt-6-luna,23,25,27,29,27,131,150,0,19
