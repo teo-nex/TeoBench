@@ -1,0 +1,110 @@
+{
+  "schema_version": "medium-windows-runtime-acceptance-1",
+  "checked_at": "2026-11-05T20:37:04.769354+00:00",
+  "platform": "Windows with existing Docker Linux amd64 engine",
+  "status": "PARTIAL_RUNTIME_ACCEPTANCE_CAMPAIGN_BLOCKED",
+  "manifest_sha256": "2439d613b79e0979599ebc9151016e7a829a41f71e748c18c190f63523f478f3",
+  "profile_sha256": "5b857430956144ae5a9dedccc5cb7b1ebf0622ec2a9052b41d51b170880a8e3a",
+  "source_sha256": {
+    "teobench/medium_bird.py": "affc37b6905f3c8d1778118c4b4ed63e9c9529a6768e58b705508ad1f044be31",
+    "teobench/medium_campaign.py": "043ea5e6ce7002ac73f3f25c38d94d847a5aeed30be7a27cea7c67c6b80b5aa8",
+    "teobench/medium_container.py": "bce47b09bd94e7e187703d0a33dcb178f95d10be6b2164e245c21ce3cb3a06d0",
+    "teobench/medium_egress.py": "7694495c9b870d32df8bd7b53df6d684ee74d22d478b170d5e7a22dbff4cde2b",
+    "teobench/medium_execution.py": "df1b61d6efc7837acc897ba64fcc0d8d983385a95326f4da5cbc8ad824bd4241",
+    "teobench/medium_image_tool.py": "e55fcb2a9f3299cf56fcfa9f2244cb5d392712147a521677c50535d0560a6340",
+    "teobench/medium_images.py": "646710d31e7e9f7f7328a17be9649e26ac79f9a61249be1066f792ed7fb599cb",
+    "teobench/medium_journal.py": "f5b22ecafe1e03f0abb738eea163836c4c0900e21c226f0791453e8a03873e57",
+    "teobench/medium_native.py": "14a349a42c7b15f4b72b00daf2f7d41596dfb9e23fffda9f5c117e45090f4656",
+    "teobench/medium_pi_smoke.py": "acc9d07d37266992f522e85427e39904ac54280c35aab54f1b2aef6680c70774",
+    "teobench/medium_quota.py": "497583934e0d4c097a44a3f44e2b07a8348087c4f7b91fc944801627892fcafc",
+    "teobench/medium_recalculate.py": "8f20817f74d5b6e8d823974cb192ecf73793a15a8b253de0d2e305673a0bc0f9",
+    "teobench/medium_spreadsheet.py": "0af0924a0e76d54e8d7b96e6cfa706f4b591e516ffb73a910cb29d799c252fee",
+    "teobench/medium_swe_helper.py": "888c26829e014fb79c8b54530f23162218981a0ea205dede49914b1f3bbaa641",
+    "teobench/medium_verified.py": "cfc2d0b5d1b65eaee911f69b54c371854abb013aad1be4d852554b3fa4cbeec1",
+    "teobench/medium_atomic.mjs": "e56d8bb0b9476f416b0fecaf861fec5072f59e343929845d6307fe69cf0603bd",
+    "teobench/medium_pi_agent.mjs": "7f1b8b0d2091282893b7b77208d68d4861a6533b3fb868d07f4e06f80967c048",
+    "teobench/medium_pi_trial.mjs": "493a153cf23ae3e1bb6cc559d38a9b099ee38a51721509e452d7d594fb0c5a10"
+  },
+  "real_model_requests": 0,
+  "primary_attempts_started": 0,
+  "primary_attempts_planned": 3500,
+  "pi_scripted_requests": 3,
+  "pi_terminal_image_quota_fixture": "PASS",
+  "pi_static_conditions_passed": 35,
+  "not_live_35_condition_provider_acceptance": true,
+  "representative_source_acceptance": {
+    "terminal": {
+      "id": "regex-log",
+      "checks": {
+        "oracle": 1,
+        "noop": 0,
+        "corrupt": 0
+      },
+      "receipt_sha256": "875eea0b6b39c249026af7cd3f35e182f8e6af7292f28b492446f8b04d29e7e9"
+    },
+    "swe-pro": {
+      "id": "instance_qutebrowser__qutebrowser-fec187c2cb53d769c2682b35ca77858a811414a8-v363c8a7e5ccdf6968fc7ab84a2053ac78036691d",
+      "checks": {
+        "oracle": 1,
+        "corrupt": 0,
+        "noop": 0
+      },
+      "receipt_sha256": "abcfbf07d89c68a18add00f5ef3d41b28a84e6f81a7bd179c116329501b2b0ba"
+    },
+    "bird": {
+      "id": "18",
+      "checks": {
+        "oracle": 1,
+        "noop": 0,
+        "corrupt": 0
+      },
+      "receipt_sha256": "fe3bad69783e1d7be6278ed7c80374d4a9f9689adc31ac78975d3ca2875cb56c"
+    },
+    "spreadsheet": {
+      "id": "Template/06_02",
+      "checks": {
+        "oracle": 1,
+        "noop": 0,
+        "corrupt": 0
+      },
+      "receipt_sha256": "2d1630a9c6d0b83cb3d82a98d454db28b2d3f8e8cadb3b7ec56f1a8d92c522e0"
+    }
+  },
+  "verified_harness": {
+    "package": "swebench",
+    "version": "4.1.0",
+    "runtime_acceptance": "PENDING_CAPACITY"
+  },
+  "task_image_metadata_pinned": 70,
+  "bird_gold_queries_nonempty": 15,
+  "bird_unique_databases": 11,
+  "spreadsheet_input_gold_pairs_recalculated_with_write_receipts": 15,
+  "spreadsheet_runtime": "LibreOffice 7.4.7.2 40(Build:2)\n\n3.1.5",
+  "host_free_gib": 10.35,
+  "host_reserve_gib": 12,
+  "largest_compressed_task_image_gib": 5.203153372742236,
+  "blockers": [
+    "host_disk_reserve_reached",
+    "image_compressed_lower_bound_exceeds_free_disk_budget",
+    "swe-verified_oracle_and_negative_acceptance_pending"
+  ],
+  "blocked_run_created_journal": false,
+  "not_a_benchmark_result": true,
+  "local_automated_tests": {
+    "host": "macOS",
+    "python_full_suite": {
+      "run": 190,
+      "passed": 189,
+      "skipped": 1,
+      "status": "PASS",
+      "skip_reason": "Linux filesystem and environment boundary"
+    },
+    "post_fix_targeted_python": {
+      "run": 10,
+      "status": "PASS",
+      "resource_warnings_as_errors": true
+    },
+    "node_tests": 3,
+    "node_status": "PASS"
+  }
+}

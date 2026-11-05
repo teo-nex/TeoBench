@@ -1,0 +1,23 @@
+{
+  "cache": "cache",
+  "assets": "runtime-assets",
+  "databases": "databases",
+  "native_images": "image-inventory.json",
+  "verified_prepared": "verified",
+  "spreadsheet_prepared": "spreadsheets-recalculated-v2",
+  "spreadsheet_image": "sha256:REPLACE_WITH_LOCAL_SPREADSHEET_IMAGE_ID",
+  "proxy_image": "sha256:REPLACE_WITH_LOCAL_PYTHON_IMAGE_ID",
+  "docker": "docker",
+  "output": "campaign",
+  "transport": "routing.json",
+  "quota_auth": "REPLACE_WITH_EXISTING_NATIVE_AUTH_FILE_PATH",
+  "acceptance": {
+    "terminal": "acceptance/terminal/acceptance.json",
+    "swe-pro": "acceptance/swe-pro/acceptance.json",
+    "swe-verified": "acceptance/swe-verified/acceptance.json",
+    "bird": "acceptance/bird/acceptance.json",
+    "spreadsheet": "acceptance/spreadsheet/acceptance.json",
+    "pi_fixture": "acceptance/pi-fixture/acceptance.json",
+    "pi_preflight": "acceptance/pi-preflight/acceptance.json"
+  }
+}

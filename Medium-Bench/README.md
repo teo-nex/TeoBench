@@ -2,7 +2,9 @@
 
 **The full Medium campaign is not yet runnable or runtime-accepted. No Medium
 model results exist in this branch.** The clean Pi/container client has passed
-Windows acceptance; task evaluators remain pending. Easy's `RUN_TEO_BENCH`
+Windows acceptance. Four evaluator adapters have passed representative oracle /
+no-op / corrupt-artifact checks; SWE-bench Verified is blocked on disk capacity.
+Easy's `RUN_TEO_BENCH`
 command still runs Easy; it does not run this set.
 
 This freezes the proposed public-source composite before any scored inference:
@@ -95,8 +97,8 @@ All seven exact models also passed a separate live Windows Pi/container smoke
 at `high` through a local OmniRoute gateway. See the
 [gateway acceptance record](validation/windows-gateway-20261105.json).
 This does not establish live access at the other four effort levels or provide
-any scores for the selected tasks. The five source evaluators, task environment
-capacity and campaign quota guard still require acceptance. Linux execution of
+any scores for the selected tasks. These are historical v1 client checks; the
+current v2 checks and remaining gates are listed below. Linux execution of
 this new scaffold is not established by these Windows checks.
 
 Transport failures retain fixed diagnostic categories, including session-limit,
@@ -107,9 +109,71 @@ fifth fresh Pi session during acceptance. Use a separate admission limit for
 parallel requests; do not weaken model or connection restrictions to fix it.
 All initial infrastructure failures remain separate from benchmark observations.
 
-This branch provides the frozen selection, integrity checks and an experimental
-clean Pi/container smoke; **it does not yet provide the five complete task
-execution adapters or their acceptance**.
+This branch now includes experimental adapters for all five sources and a durable
+3500-slot controller. **Adapter code is not full runtime acceptance.** See
+[the runtime acceptance record](validation/windows-runtime-20261105.json).
+
+## Experimental v2 runtime and campaign
+
+`pi-medium-sandbox-v2` adds a container-only `inspect_image` tool. Personal Pi
+configuration, skills, extensions, context files and model credentials are not
+mounted in task containers. Every model/effort is selected explicitly. A
+scripted localhost provider has exercised terminal and image tools on Windows;
+all 35 selections have passed preflight without model inference. This is not
+live acceptance of all 35 provider routes.
+
+The new controller is separate from Easy and the historical v1 smoke:
+
+```sh
+python scripts/prepare_medium_runtime.py --output local-runs/medium/runtime-assets
+python scripts/prepare_medium_databases.py --output local-runs/medium/databases --docker docker
+python -m teobench.medium_campaign check --config local-runs/medium/config.json
+python -m teobench.medium_campaign prepare-metadata --config local-runs/medium/config.json
+python -m teobench.medium_campaign accept --config local-runs/medium/config.json --source bird --task 18
+python -m teobench.medium_campaign run --config local-runs/medium/config.json
+```
+
+These commands require the preparation cache, installed Pi 0.85.1, Node,
+`pyarrow==26.0.1`, `swebench==4.1.0` and an existing Linux amd64 Docker engine.
+The database command downloads a pinned public data image, creates a stopped
+container and extracts only exact selected database paths. It never runs that
+image. Mini-Dev's toxicology override must take precedence over the same-named
+dev database; selection by basename is invalid.
+
+Copy [runtime.example.json](runtime.example.json) to a private `local-runs`
+directory and fill its paths and immutable local image IDs. Build the
+[spreadsheet environment](environments/spreadsheet/Dockerfile) only within the
+user's authorized setup. Record the actual resulting image ID. LibreOffice
+preparation uses the upstream UNO functions and verifies that both workbooks
+were replaced; a zero exit code or valid XLSX alone is insufficient. Historical
+spreadsheet preparation without these write receipts must use a new directory.
+
+`check` and `run` fail closed on missing source acceptance, spreadsheet
+recalculation, BIRD gold/database compatibility, current Pi fixture/preflight,
+unpinned task images or insufficient host space. All source acceptance records
+must show oracle=1, no-op=0, corrupt=0 and zero model requests. The full run has
+**not yet passed end-to-end acceptance**; do not advertise it as ready.
+
+The controller currently runs one trial at a time with a minimum four-second
+request gap. It records first attempts in SQLite/WAL, freezes source/profile/
+image/input hashes and resumes saved artifacts without rerunning inference.
+Interrupted dispatched attempts block for receipt review. A transport failure
+stops the controller and stays separate from a wrong answer. No automatic
+submission, retries for score improvement or model substitution is enabled.
+
+A trusted launcher supplies `TEOBENCH_GATEWAY_KEY` in process memory. The
+subscription quota guard reads existing native authentication without changing
+it, checks every request and pauses at 70% usage. Unknown quota or identity
+changes block requests; credits never override the gate. This local reserve
+policy is not a provider-side billing lock. Restrict the gateway to the seven
+exact subscription routes and one authorized connection, with fallback disabled.
+
+Image pulls and active Pi execution check a 12 GiB host-space reserve. This is a
+best-effort stop, not a hard filesystem quota or a guarantee that compressed
+images fit after unpacking. Docker Desktop's guest-space reclamation may not
+immediately return space to Windows. The current PC1 run is blocked on host
+capacity and Verified runtime acceptance; **zero of 3500 primary attempts have
+started**. Linux and macOS acceptance of this v2 controller remains pending.
 
 ## Explicit Pi installation on Windows
 
