@@ -18,7 +18,7 @@ The first tier, **[Easy-Bench](Easy-Bench/README.md)**, contains 30 tasks from a
 
 **The default study is 7 models × 5 efforts × 30 tasks = 1050 primary trials, not 30 trials on one model.** Repeating the original protocol also includes 35 pilot and 42 control trials, for 1127 total. All seven models and all five efforts are required; inaccessible routes must be reported as BLOCKED, never silently omitted.
 
-Read **[Run the full study](docs/RUN_FULL_STUDY.md)** and [AGENTS.md](AGENTS.md). The exact models, efforts, task IDs and phase settings are in [campaign.json](Easy-Bench/campaign.json). The agent coordinates the full campaign; the explicit `pi-trial` adapter performs one isolated trial at a time. Inspection commands perform no inference.
+Read **[Run the full study](docs/RUN_FULL_STUDY.md)** and [AGENTS.md](AGENTS.md). The exact models, efforts, task IDs and phase settings are in [campaign.json](Easy-Bench/campaign.json). The agent coordinates the full campaign; the selected `pi-trial` or `codex-trial` adapter performs one isolated trial at a time. Inspection commands perform no inference.
 
 **Send this command to your agent, not to a shell:**
 
@@ -28,11 +28,11 @@ RUN_TEO_BENCH: execute RUN_RESEARCH.md in https://github.com/teo-nex/TeoBench no
 
 See the [execution task](RUN_RESEARCH.md). A read-only client or missing model access must be reported as BLOCKED; cloning the repository does not grant those permissions.
 
-New studies use **[isolated Pi execution](docs/ISOLATED_INFERENCE.md)**: your current agent orchestrates, while each evaluated model gets a fresh fixed profile without personal instructions, skills or extensions. The optional `pi-trial` command runs and records one exact slot; the agent repeats it through the full campaign. Existing studies retain their original methods.
+New studies use **[isolated execution](docs/ISOLATED_INFERENCE.md)**: `study create --execution-profile auto` selects installed Pi first, otherwise a [temporary clean Codex home](docs/CODEX_FALLBACK.md). Each evaluated model gets fixed instructions without personal settings, skills or conversation. Temporary Codex profiles are deleted after each trial; results remain. The agent repeats the selected adapter through the full campaign. Pi, Codex and historical studies retain separate method fingerprints.
 
 ## Quick start
 
-Python 3.9+ and the standard library run offline grading; no Python packages or API keys are required for those commands. Optional Pi inference additionally uses installed Node/Pi and existing provider authentication. Python and SQL grading additionally require an OS sandbox:
+Python 3.9+ and the standard library run offline grading; no Python packages or API keys are required for those commands. Optional inference reuses installed Node/Pi or native Codex and existing authentication; clients are not installed automatically. Python and SQL grading additionally require an OS sandbox:
 
 - **macOS:** built-in Seatbelt and Python outside `/Users` and `/Volumes`, with automatic fallback to an existing local Docker Linux engine when Seatbelt setup is denied. Run `python3 -m teobench doctor --prepare` before model requests; Docker is unnecessary when Seatbelt works.
 - **Windows 10/11:** native Windows Python plus a running [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) Linux engine. Run `py -3 -m teobench doctor --prepare` once to fetch the pinned official Python image. No WSL command, Bash, `resource` module or POSIX path is required in the Windows CLI.

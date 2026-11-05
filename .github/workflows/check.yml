@@ -49,5 +49,7 @@ jobs:
         run: python -m unittest discover -s tests -p test_response_stream.py -v
       - name: Isolated Pi policy regressions (no Pi installation or inference)
         run: python -m unittest discover -s tests -p test_pi_runner.py -v
+      - name: Disposable Codex policy regressions (no Codex installation or inference)
+        run: python -m unittest discover -s tests -p test_codex_runner.py -v
       - name: Full campaign contract
         run: python -m unittest discover -s tests -p test_campaign.py -v

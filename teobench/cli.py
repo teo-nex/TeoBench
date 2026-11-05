@@ -1,4 +1,4 @@
-"""Offline grading commands plus an explicit, optional isolated Pi inference command."""
+"""Offline grading commands plus explicit, optional isolated Pi/Codex inference."""
 
 import argparse
 import collections
@@ -51,6 +51,22 @@ def emit(value):
     print(json.dumps(value, ensure_ascii=False, indent=2, allow_nan=False))
 
 
+def execution_profile(name):
+    """Choose once for a new study, never switch runners halfway through it."""
+    if name == 'auto':
+        from . import pi_runner
+        try:
+            pi_runner.package_path()
+            if not pi_runner.shutil.which('node'):
+                raise ValueError('Node is unavailable')
+            name = 'pi-clean-v1'
+        except (ValueError, OSError):
+            from .codex_runner import executable
+            executable()
+            name = 'codex-clean-v1'
+    return name
+
+
 def main(argv=None):
     import sys
     if hasattr(sys.stdout, "reconfigure"):
@@ -79,7 +95,7 @@ def main(argv=None):
     create.add_argument("--access-route", required=True, help="provider/gateway route, without credentials")
     create.add_argument("--environment", required=True, help="OS/runtime and relevant tool settings; no host/user names")
     create.add_argument("--campaign-profile", help="explicit trusted campaign profile; creates schema 1.1")
-    create.add_argument("--execution-profile", choices=["pi-clean-v1"], help="separate standardized inference cohort")
+    create.add_argument("--execution-profile", choices=["auto", "pi-clean-v1", "codex-clean-v1"], help="separate standardized inference cohort; auto prefers installed Pi, then Codex")
     record = actions.add_parser("record")
     record.add_argument("--file", type=Path, required=True)
     record.add_argument("--task", required=True)
@@ -120,10 +136,30 @@ def main(argv=None):
     pi.add_argument("--study", type=Path, help="record next missing campaign slot; locks checkpoint for the whole trial")
     pi.add_argument("--replicate", type=int, default=0)
     pi.add_argument("--preflight", action="store_true", help="check isolation and exact selection without a model request")
+    codex = sub.add_parser('codex-trial', help='optional disposable clean Codex trial; preflight performs no inference')
+    codex.add_argument('--task', required=True)
+    codex.add_argument('--model', required=True)
+    codex.add_argument('--effort', required=True)
+    codex.add_argument('--provider', default='openai', choices=['openai'])
+    codex.add_argument('--codex-bin', type=Path)
+    codex.add_argument('--auth-file', type=Path)
+    codex.add_argument('--auth-mode', choices=['chatgpt', 'api-key'], default='chatgpt')
+    codex.add_argument('--transport', type=Path, help='explicit routing-only Responses gateway JSON; API mode only')
+    codex.add_argument('--output', type=Path, required=True)
+    codex.add_argument('--study', type=Path)
+    codex.add_argument('--replicate', type=int, default=0)
+    codex.add_argument('--preflight', action='store_true')
     args = parser.parse_args(argv)
     try:
-        if args.command == "pi-trial":
-            from . import pi_runner
+        if args.command in ("pi-trial", "codex-trial"):
+            if args.command == 'pi-trial':
+                from . import pi_runner as runner
+                options = {'pi_package':args.pi_package}
+                route_options = {}
+            else:
+                from . import codex_runner as runner
+                options = {'codex_bin':args.codex_bin, 'auth_mode':args.auth_mode}
+                route_options = {'auth_mode':args.auth_mode}
             if args.output.exists():
                 raise ValueError("trial_output_already_exists")
             args.output.mkdir(parents=True, mode=0o700)
@@ -135,16 +171,16 @@ def main(argv=None):
                     stack.enter_context(studies.study_lock(args.study))
                     value = studies.load_json(args.study)
                     studies.validate(value, regrade=False)
-                    pi_runner.require_profile(value)
+                    runner.require_profile(value)
                     job = campaign.coverage(value)['next_trial']
                     requested = (args.model, args.effort, args.replicate, args.task)
                     if job is None or campaign.identity(job) != requested:
                         raise ValueError("BLOCKED: execute the exact next missing campaign slot")
-                    route_hash = pi_runner.bind_route(value, args.provider, args.transport)
+                    route_hash = runner.bind_route(value, args.provider, args.transport, **route_options)
                     studies.validate(value, regrade=False)
                     studies.save(args.study, value)
-                result = pi_runner.run(args.task, args.model, args.effort, args.provider,
-                    pi_package=args.pi_package, auth_file=args.auth_file, transport=args.transport, preflight=args.preflight, expected_transport_hash=route_hash, result_file=args.output/"receipt.json")
+                result = runner.run(args.task, args.model, args.effort, args.provider,
+                    **options, auth_file=args.auth_file, transport=args.transport, preflight=args.preflight, expected_transport_hash=route_hash, result_file=args.output/"receipt.json")
                 # Persist the original result before grading; a grader outage must not cause reinference.
                 (args.output/"receipt.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
                 (args.output/"receipt.json").chmod(0o600)
@@ -198,11 +234,18 @@ def main(argv=None):
                         raise ValueError("study_file_already_exists")
                     value = studies.create(args.id, args.access_route, args.environment, args.campaign_profile)
                     if args.execution_profile:
-                        from .pi_runner import mark_study
+                        selected = execution_profile(args.execution_profile)
+                        if selected == 'pi-clean-v1':
+                            from .pi_runner import mark_study
+                        else:
+                            from .codex_runner import mark_study
                         mark_study(value)
                     studies.validate(value, regrade=False)
                     studies.save(args.file, value)
-                emit({"created": str(args.file), "records": 0})
+                created = {"created": str(args.file), "records": 0}
+                if args.execution_profile:
+                    created.update(execution_profile=selected, trial_command='pi-trial' if selected=='pi-clean-v1' else 'codex-trial')
+                emit(created)
             elif args.action == "record":
                 history = studies.load_json(args.history) if args.history else []
                 answer = args.answer.read_text(encoding="utf-8-sig")

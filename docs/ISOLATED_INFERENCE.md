@@ -4,8 +4,14 @@ The user's current agent is the **orchestrator**, not the test subject. Its pers
 instructions must never be passed to the evaluated model. A fresh conversation
 alone does not remove global configuration, skills, extensions or context files.
 
-New standardized studies use **`pi-clean-v1`**, an optional Pi SDK adapter. Offline
-grading, accepted studies and the frozen tasks remain unchanged. Historical
+For new studies, `study create --execution-profile auto` selects installed Pi
+0.85.1/Node (`pi-clean-v1`) first. If unavailable, it selects installed native
+Codex CLI 0.166.0 with a [disposable clean home](CODEX_FALLBACK.md)
+(`codex-clean-v1`). The command returns `execution_profile` and `trial_command`;
+use that adapter for the whole checkpoint. Neither client is installed
+automatically. Missing both clients or required model access is `BLOCKED`.
+The Pi protocol is below; the Codex protocol is in [CODEX_FALLBACK.md](CODEX_FALLBACK.md).
+Offline grading, accepted studies and frozen tasks remain unchanged. Historical
 studies retain their original methods; they are not retroactively certified clean.
 
 ## Requirements and boundary
@@ -147,10 +153,12 @@ user home. `--ignore-user-config` skips its config file while authentication sti
 uses `CODEX_HOME`. Neither switch by itself demonstrates a fixed evaluated-model
 context. See [official Codex CLI documentation](https://learn.chatgpt.com/docs/developer-commands#codex-exec).
 
-A future Codex adapter must verify equivalent isolation, tools, model/effort and
-request context, record its own fingerprint, and form a separate cohort. Do not
-label a normal Codex/OpenCode session `pi-clean-v1`. The supported standardized
-adapter in this change is Pi; other existing reports remain readable as declared.
+The supported [Codex adapter](CODEX_FALLBACK.md) creates a temporary home and
+`CODEX_HOME`, empty workspace and ephemeral thread for each task, verifies the
+effective configuration, and deletes its temporary files afterwards. It records
+its own fingerprint and forms a separate cohort, including its native output
+limit. Do not label a normal Codex/OpenCode session `pi-clean-v1` or
+`codex-clean-v1`. Other existing reports remain readable as declared.
 
 ## Offline verification
 
