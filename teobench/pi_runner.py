@@ -64,7 +64,16 @@ def package_path(explicit=None):
         executable = shutil.which('pi')
         if not executable:
             raise ValueError('BLOCKED: Pi is not installed; no automatic installation')
-        path = Path(executable).resolve().parent.parent.parent
+        launcher = Path(executable).resolve()
+        path = launcher.parent.parent.parent
+        # npm on Windows installs a .cmd/.ps1 shim, not a symlink to the
+        # package's JS entry point. Resolve only its declared known Pi target;
+        # never execute the shim or scan/import personal npm configuration.
+        if launcher.suffix.lower() in ('.cmd', '.ps1') and launcher.stat().st_size <= 65536:
+            shim = launcher.read_text(encoding='utf-8-sig')
+            match = re.search(r'node_modules[\\/](@earendil-works|@mariozechner)[\\/]pi-coding-agent[\\/]', shim)
+            if match:
+                path = launcher.parent / 'node_modules' / match.group(1) / 'pi-coding-agent'
         if not (path / 'package.json').is_file():
             raise ValueError('BLOCKED: pass --pi-package with the installed Pi package directory')
     data = json.loads((path / 'package.json').read_text(encoding='utf-8'))

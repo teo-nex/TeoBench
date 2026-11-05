@@ -90,3 +90,22 @@ scaffold still requires live acceptance; it is not established by CLI support.
 This branch provides the frozen selection, integrity checks and an experimental
 clean Pi/container smoke; **it does not yet provide the five complete task
 execution adapters or their acceptance**.
+
+## Explicit Pi installation on Windows
+
+When the user has authorized installing Pi, run the helper from an ordinary
+PowerShell terminal using the machine's normal script policy:
+
+```powershell
+.\scripts\setup_pi_windows.ps1
+py -3 -c "from teobench.pi_runner import package_path; print(package_path())"
+```
+
+The helper reuses Node.js 22.19+ and npm, installs Pi 0.85.1 into the current
+user's npm prefix, skips lifecycle scripts and verifies that Pi starts. It does
+not sign in, copy credentials, alter a personal Pi profile or change execution
+policy, Docker, firewall or networking. A different existing Pi version is
+preserved unless replacement is explicitly requested. Native npm warnings are
+logged separately instead of being treated as failed installation by
+PowerShell 5. If local policy blocks scripts, follow the host's normal approval
+process; the helper does not disable that policy.

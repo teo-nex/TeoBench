@@ -14,6 +14,27 @@ from teobench import pi_runner
 
 
 class PiPolicyTests(unittest.TestCase):
+    def test_windows_npm_shim_discovers_the_actual_package_without_execution(self):
+        with tempfile.TemporaryDirectory() as directory:
+            prefix=Path(directory)/'npm prefix with spaces';prefix.mkdir()
+            shim=prefix/'pi.cmd'
+            shim.write_text('@echo off\n"%dp0%\\node_modules\\@earendil-works\\pi-coding-agent\\dist\\bundle\\cli.js" %*\n')
+            package=prefix/'node_modules/@earendil-works/pi-coding-agent';package.mkdir(parents=True)
+            (package/'package.json').write_text(json.dumps({'name':'@earendil-works/pi-coding-agent','version':'0.85.1'}))
+            with patch('teobench.pi_runner.shutil.which',return_value=str(shim)), \
+                 patch('teobench.pi_runner.subprocess.Popen',side_effect=AssertionError('do not execute shim')):
+                self.assertEqual(pi_runner.package_path(),package.resolve())
+
+    def test_windows_shim_must_not_silently_choose_another_installed_pi(self):
+        with tempfile.TemporaryDirectory() as directory:
+            prefix=Path(directory);shim=prefix/'pi.cmd'
+            shim.write_text('"%dp0%\\node_modules\\@mariozechner\\pi-coding-agent\\dist\\cli.js"')
+            for scope,version in [('@mariozechner','0.1.0'),('@earendil-works','0.85.1')]:
+                package=prefix/'node_modules'/scope/'pi-coding-agent';package.mkdir(parents=True)
+                (package/'package.json').write_text(json.dumps({'name':scope+'/pi-coding-agent','version':version}))
+            with patch('teobench.pi_runner.shutil.which',return_value=str(shim)):
+                with self.assertRaisesRegex(ValueError,'requires Pi 0.85.1'):pi_runner.package_path()
+
     def test_environment_drops_runtime_injection_and_unrelated_secrets(self):
         env = pi_runner.clean_environment('/clean', {'PATH':'/bin','HOME':'/real-home',
             'NODE_OPTIONS':'--import personal-hook.mjs','PI_PACKAGE_DIR':'/personal',
