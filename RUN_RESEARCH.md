@@ -12,15 +12,21 @@ When the user sends **`RUN_TEO_BENCH`** or asks you to execute this file:
    the exact permission needed; do not bypass the client's restrictions.
 2. Run the OS-specific `doctor` and verify the frozen dataset. Discover the
    participant's configured model interfaces without displaying credentials.
+   Follow [clean inference](docs/ISOLATED_INFERENCE.md): the orchestrator stays
+   in its current client, but evaluated models run only in fresh `pi-clean-v1`
+   sessions through `pi-trial`, never with the orchestrator's personal context.
    Confirm all 35 exact model/effort combinations in
    [campaign.json](Easy-Bench/campaign.json). Missing sandbox, model access,
    allowed usage or write permission is a concrete blocker, not success.
-3. Create or resume a current-grader checkpoint under `local-runs/`. Follow the
+3. Create a new current-grader checkpoint with `--execution-profile pi-clean-v1`,
+   or resume an existing checkpoint with that identical fingerprint under `local-runs/`. Follow the
    execution order: **35 pilot + 1050 primary + 42 control = 1127 attempts**.
-   Invoke each requested model/effort through its actual interface. Do not
+   Invoke `pi-trial --study ...` for each exact missing model/effort/task/replicate;
+   the adapter records the original completed answer or transport failure. Do not
    answer as the orchestrator, import old answers as fresh observations, invent
    tool receipts, substitute routes or reduce the matrix.
-4. Persist every answer or transport failure immediately with `study record`.
+4. Persist every answer or transport failure immediately (`pi-trial --study` does
+   this; `study record` is also available for recovery of a saved original receipt).
    Use up to four concurrent trials, at most one per model, a global four-second
    start gap and 240-second trial timeouts. Resume missing trials after
    interruption; do not select better attempts. Keep references out of inference.
@@ -35,5 +41,6 @@ When the user sends **`RUN_TEO_BENCH`** or asks you to execute this file:
    call `study submit --publish` only with the user's consent for this report.
 
 The CLI supplies grading, progress and submission; it is not a universal model
-API runner. An agent must perform the model calls through available interfaces.
+API runner. The optional `pi-trial` command performs one controlled Pi trial;
+an agent still loops through the full plan, resumes and manages submission.
 This file does not install model access or override account/host permissions.

@@ -1,7 +1,8 @@
-"""Offline commands. No provider, credentials, model calls or network required."""
+"""Offline grading commands plus an explicit, optional isolated Pi inference command."""
 
 import argparse
 import collections
+from contextlib import ExitStack
 import hashlib
 import importlib.util
 import json
@@ -78,6 +79,7 @@ def main(argv=None):
     create.add_argument("--access-route", required=True, help="provider/gateway route, without credentials")
     create.add_argument("--environment", required=True, help="OS/runtime and relevant tool settings; no host/user names")
     create.add_argument("--campaign-profile", help="explicit trusted campaign profile; creates schema 1.1")
+    create.add_argument("--execution-profile", choices=["pi-clean-v1"], help="separate standardized inference cohort")
     record = actions.add_parser("record")
     record.add_argument("--file", type=Path, required=True)
     record.add_argument("--task", required=True)
@@ -106,8 +108,60 @@ def main(argv=None):
     stats = sub.add_parser("stats", help="regrade accepted studies and aggregate complete runs")
     stats.add_argument("--directory", type=Path, default=ROOT / "Easy-Bench" / "studies")
     stats.add_argument("--output", type=Path)
+    pi = sub.add_parser("pi-trial", help="optional clean Pi trial; --preflight performs no model inference")
+    pi.add_argument("--task", required=True)
+    pi.add_argument("--model", required=True)
+    pi.add_argument("--effort", required=True)
+    pi.add_argument("--provider", required=True)
+    pi.add_argument("--pi-package", type=Path)
+    pi.add_argument("--auth-file", type=Path)
+    pi.add_argument("--transport", type=Path, help="explicit routing-only JSON; never personal models.json")
+    pi.add_argument("--output", type=Path, required=True, help="new private output directory")
+    pi.add_argument("--study", type=Path, help="record next missing campaign slot; locks checkpoint for the whole trial")
+    pi.add_argument("--replicate", type=int, default=0)
+    pi.add_argument("--preflight", action="store_true", help="check isolation and exact selection without a model request")
     args = parser.parse_args(argv)
     try:
+        if args.command == "pi-trial":
+            from . import pi_runner
+            if args.output.exists():
+                raise ValueError("trial_output_already_exists")
+            args.output.mkdir(parents=True, mode=0o700)
+            with ExitStack() as stack:
+                value = None
+                route_hash = None
+                if args.study:
+                    from . import studies, campaign
+                    stack.enter_context(studies.study_lock(args.study))
+                    value = studies.load_json(args.study)
+                    studies.validate(value, regrade=False)
+                    pi_runner.require_profile(value)
+                    job = campaign.coverage(value)['next_trial']
+                    requested = (args.model, args.effort, args.replicate, args.task)
+                    if job is None or campaign.identity(job) != requested:
+                        raise ValueError("BLOCKED: execute the exact next missing campaign slot")
+                    route_hash = pi_runner.bind_route(value, args.provider, args.transport)
+                    studies.validate(value, regrade=False)
+                    studies.save(args.study, value)
+                result = pi_runner.run(args.task, args.model, args.effort, args.provider,
+                    pi_package=args.pi_package, auth_file=args.auth_file, transport=args.transport, preflight=args.preflight, expected_transport_hash=route_hash, result_file=args.output/"receipt.json")
+                # Persist the original result before grading; a grader outage must not cause reinference.
+                (args.output/"receipt.json").write_text(json.dumps(result, ensure_ascii=False, indent=2), encoding="utf-8")
+                (args.output/"receipt.json").chmod(0o600)
+                if value is not None and not args.preflight and result['status'] in ('COMPLETED','TRANSPORT_ERROR'):
+                    studies.add_record(value, args.task, args.model, args.effort,
+                        result['answer'], result['tool_history'], args.replicate,
+                        result['elapsed_seconds'], result['transport_error'])
+                    studies.save(args.study, value)
+            for name, value in [("answer.txt", result["answer"]),
+                                ("history.json", json.dumps(result["tool_history"], ensure_ascii=False)),
+                                ("receipt.json", json.dumps(result, ensure_ascii=False, indent=2))]:
+                path = args.output/name
+                path.write_text(value, encoding="utf-8"); path.chmod(0o600)
+            emit({"status":result["status"], "profile":result["profile"], "profile_sha256":result["profile_sha256"],
+                  "output":str(args.output), "blocker":result.get("blocker"),
+                  "transport_error":result.get("transport_error"), "inference_started":result["inference_started"]})
+            return 0 if result["status"] in ("COMPLETED","PREFLIGHT_PASS") else 1
         if args.command == "doctor":
             from .sandbox import doctor
             emit(doctor(args.prepare))
@@ -143,6 +197,10 @@ def main(argv=None):
                     if args.file.exists():
                         raise ValueError("study_file_already_exists")
                     value = studies.create(args.id, args.access_route, args.environment, args.campaign_profile)
+                    if args.execution_profile:
+                        from .pi_runner import mark_study
+                        mark_study(value)
+                    studies.validate(value, regrade=False)
                     studies.save(args.file, value)
                 emit({"created": str(args.file), "records": 0})
             elif args.action == "record":
