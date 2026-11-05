@@ -6,14 +6,19 @@ When the user says **`RUN_TEO_BENCH`** or asks to execute **`RUN_RESEARCH.md`**,
 
 ## Standardized inference — isolate the evaluated model
 
-For NEW studies, use [pi-clean-v1](docs/ISOLATED_INFERENCE.md) and the explicit
-`pi-trial` adapter. Your current agent may orchestrate the study, but must never
-answer the tasks itself or forward its personal instructions/history to test
-subjects. Reuse installed Pi 0.85.1 and Node; missing access/dependencies are
-BLOCKED, never an excuse to fall back silently to a personalized session.
-Preflight all 35 exact model/effort conditions without model inference. Create a
-NEW checkpoint with `study create --execution-profile pi-clean-v1`; then invoke
-`pi-trial --study ...` for the exact `campaign next` slot through all 1127 trials.
+For NEW studies, use [clean inference](docs/ISOLATED_INFERENCE.md). Create a NEW
+checkpoint with `study create --execution-profile auto`: reuse installed Pi
+0.85.1/Node first; otherwise use installed native Codex CLI 0.166.0 with a
+[disposable clean home](docs/CODEX_FALLBACK.md). Read the returned
+`execution_profile` and `trial_command`, and use that adapter throughout the
+study. Never install a client or change the participant's settings automatically.
+Your current agent may orchestrate, but must never answer the tasks itself or
+forward personal instructions/history to test subjects. Missing model access or
+both clients means BLOCKED. Do not silently switch adapters within a checkpoint.
+Preflight all 35 exact model/effort conditions without model inference. Invoke
+the selected `pi-trial --study ...` or `codex-trial --study ...` for the exact
+`campaign next` slot through all 1127 trials. Codex defaults to existing ChatGPT
+sign-in; never enable API billing without explicit authorization.
 Do not overwrite existing trial outputs. Recover a saved original receipt after
 an interruption/grader failure; do not rerun its model request. The adapter
 checks the clean context, provider/model/effort, binds the route and records each
@@ -38,4 +43,4 @@ Exact models: `gpt-5.6-luna`, `gpt-6-luna`, `gpt-5.6-terra`, `gpt-6.1-terra`, `g
 7. Without explicit consent, only preview `study submit --file PATH`. After consent use `--publish`; never auto-merge. Existing consent for this exact report remains valid. Submission and trusted PR validation reject missing primary, pilot or control coverage.
 8. Never include API keys, auth headers, cookies, provider accounts, private logs or home paths. Inference origin and tool provenance are submitter-reported, not independent model attestation.
 
-The CLI provides the plan, grading, progress and submission. The optional `pi-trial` adapter executes and records one isolated slot; the agent must loop through all configured models. CLI inspection alone does not run inference. If you cannot invoke them, say BLOCKED rather than claim an audit ran.
+The CLI provides the plan, grading, progress and submission. The optional `pi-trial` and `codex-trial` adapters execute and record one isolated slot; the agent must loop through all configured models. CLI inspection alone does not run inference. If you cannot invoke them, say BLOCKED rather than claim an audit ran.
