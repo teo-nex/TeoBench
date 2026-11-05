@@ -1,0 +1,89 @@
+{
+  "receipt_schema": "teobench-maintainer-revalidation-v1",
+  "source_pr": "https://github.com/teo-nex/TeoBench/pull/10",
+  "source_pr_head_sha": "96cb1cfad33f83c1bab5244ad8b5e7c1308e1570",
+  "study_path": "Easy-Bench/studies/docker-full-20261104/study.json",
+  "study_sha256": "2bca4a09436c0ebfd940cfcfb43568dca5c85450bf401e0aa6a68c58813497bc",
+  "study_git_blob_sha": "18bcbc1a579faffbed191e39194506b3fc3598d0",
+  "verified_at": "2026-11-05T14:09:25.135721+00:00",
+  "original_study_modified": false,
+  "new_model_inference_executed": false,
+  "validation": {
+    "status": "PASS",
+    "study_id": "docker-full-20261104",
+    "records": 1127,
+    "conditions": 56,
+    "complete_runs": 35,
+    "incomplete_runs": 21,
+    "semantic_pass": 1039,
+    "transport_errors": 9,
+    "answers_regraded": true,
+    "recorded_grader_sha256": "2a3a06139c1691e561d053330bbb44cc3b0042049767a3aab6e61008c15c896c",
+    "regraded_with_sha256": "2a3a06139c1691e561d053330bbb44cc3b0042049767a3aab6e61008c15c896c",
+    "model_identity_and_execution_trace": "submitter-reported; not independently attested",
+    "campaign_profile": "reasoning-effort-7x5-v1",
+    "additional_attempts": 43,
+    "campaign": {
+      "profile": "reasoning-effort-7x5-v1",
+      "status": "COMPLETE",
+      "primary_complete": true,
+      "full_protocol_complete": true,
+      "expected_models": [
+        "gpt-5.6-luna",
+        "gpt-6-luna",
+        "gpt-5.6-terra",
+        "gpt-6.1-terra",
+        "gpt-5.6-sol",
+        "gpt-6.1-sol",
+        "gpt-6-astra"
+      ],
+      "expected_efforts": [
+        "low",
+        "medium",
+        "high",
+        "xhigh",
+        "max"
+      ],
+      "complete_primary_conditions": 35,
+      "expected_primary_conditions": 35,
+      "phases": {
+        "pilot": {
+          "expected": 35,
+          "recorded": 35,
+          "missing": 0
+        },
+        "primary": {
+          "expected": 1050,
+          "recorded": 1050,
+          "missing": 0
+        },
+        "controls": {
+          "expected": 42,
+          "recorded": 42,
+          "missing": 0
+        }
+      },
+      "unexpected_results": 0,
+      "next_trial": null,
+      "inference_executed_by_this_command": false
+    }
+  },
+  "trusted_validator_commit": "5a0c3e2155d69c0f409c7b0e809adb4e5857a235",
+  "regrading_environment": {
+    "platform": "darwin",
+    "backend": "macos-seatbelt",
+    "python": "3.14.6",
+    "sandbox_probe": "PASS",
+    "sql_probe": "PASS"
+  },
+  "source_pr_ci_at_local_validation": "action_required; this receipt records independent local maintainer regrading, not a successful source-PR CI run",
+  "replaces_anonymous_archive": "Easy-Bench/reports/anonymous-2026-11-05",
+  "anonymous_match": "All 35 primary model/effort pass totals, per-model transport counts and phase totals matched. User confirmed same underlying report.",
+  "original_records_unchanged_since_first_submission": true,
+  "additional_attempts_scored": false,
+  "source_reported_deviations": [
+    "34 early pilot observations did not guarantee global-instruction isolation.",
+    "Concurrency reached 12 and adaptation policy changed during execution."
+  ],
+  "scope": "Coverage and answer scores checked. Model identity, actual inference settings and isolation remain submitter-reported."
+}
