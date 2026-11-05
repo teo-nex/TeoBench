@@ -1,0 +1,1334 @@
+{
+  "schema_version": "medium-selection-1",
+  "id": "medium-public-100-v1",
+  "status": "selection_only_not_runtime_accepted",
+  "selection_seed": "teobench-medium-v1-20261105",
+  "selection_algorithm": "sha256_stratified_round_robin_v1",
+  "source_pins": {
+    "terminal": {
+      "repository": "https://github.com/harbor-framework/terminal-bench-2-1",
+      "revision": "7131e4375048a0e408a8fb404b5f499d726b695b"
+    },
+    "swe-pro": {
+      "repository": "https://huggingface.co/datasets/ScaleAI/SWE-bench_Pro",
+      "revision": "2d52cb3df914a3fcf80c7f66738b3a88ae37fc50",
+      "file": "data/default/test-00000-of-00001.parquet",
+      "download_sha256": "1067f72c1f43bbc578276888625db3b836cebb535546c9eaf824c5d5dd104a7f"
+    },
+    "swe-verified": {
+      "repository": "https://huggingface.co/datasets/SWE-bench/SWE-bench_Verified",
+      "revision": "78f471bf655a3137b2e8a75af1501690ec009ec3",
+      "file": "data/test-00000-of-00001.parquet",
+      "download_sha256": "030cfd7f2a704c4c0226e7f104c725a3b41230b1d3517f9c915ad7ea5be3fa25"
+    },
+    "bird": {
+      "repository": "https://huggingface.co/datasets/birdsql/bird_mini_dev",
+      "revision": "5b256b5a9c17478f06ed6912612e9a14d17065c8",
+      "file": "data/mini_dev_sqlite.jsonl",
+      "download_sha256": "926af2a0d1b47e5d0d15a7aa8a34d4721007f4550a881555b6a89496b54a2606"
+    },
+    "spreadsheet": {
+      "repository": "https://huggingface.co/datasets/KAKA22/SpreadsheetBench-v2",
+      "revision": "5a2215ed4121945ab09d8723df2995602090b042",
+      "file": "spreadsheetbench-v2-09-10.zip",
+      "grader_repository": "https://github.com/RUCKBReasoning/SpreadsheetBench-2",
+      "grader_revision": "a7bdc2d358e052d35a94768e1f487c0d9e9c0011",
+      "download_sha256": "52699c974c30aced7125f3d12cdaabbbcbba8db804373d7397a5d3bdf68e5b3e"
+    }
+  },
+  "source_pools": {
+    "terminal": {
+      "total": 89,
+      "resource_eligible": 89
+    },
+    "swe-pro": {
+      "total": 642
+    },
+    "swe-verified": {
+      "total": 500
+    },
+    "bird": {
+      "total": 500
+    },
+    "spreadsheet": {
+      "nonvisual_total": 297,
+      "visualization_excluded": true
+    }
+  },
+  "models": [
+    "gpt-5.6-luna",
+    "gpt-6-luna",
+    "gpt-5.6-terra",
+    "gpt-6.1-terra",
+    "gpt-5.6-sol",
+    "gpt-6.1-sol",
+    "gpt-6-astra"
+  ],
+  "efforts": [
+    "low",
+    "medium",
+    "high",
+    "xhigh",
+    "max"
+  ],
+  "source_weights": {
+    "terminal": 0.2,
+    "swe-pro": 0.2,
+    "swe-verified": 0.2,
+    "bird": 0.2,
+    "spreadsheet": 0.2
+  },
+  "tasks": [
+    {
+      "source": "terminal",
+      "id": "video-processing",
+      "stratum": "video-processing",
+      "public_input_sha256": "7894586b5ea01b0db591ce2658fea761da6b1b2bbaa1bb0fa00927b3aa22dfb3",
+      "source_record_sha256": "64d4c3c98b70aad28cd11b1878c310cb003b872d0f843580166b0ffd0af3df4b",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/video-processing:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "be4fb42fccc5faa4862789cedd2c560eaa5758a2971989649a6dafeaeccc17aa"
+    },
+    {
+      "source": "terminal",
+      "id": "constraints-scheduling",
+      "stratum": "personal-assistant",
+      "public_input_sha256": "8af74da924004e6ad2de8cd16189ff77b42bd22042391b6028db5fca4972d60a",
+      "source_record_sha256": "756cb8e8ce44518b8ce6e9fd1921ac7e77cc71ccb58eb2e5063080941179877b",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/constraints-scheduling:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "7b9842de16d74e8faf8c7c0aa03b0b81145941cb12dd322d81ae23fc48607250"
+    },
+    {
+      "source": "terminal",
+      "id": "db-wal-recovery",
+      "stratum": "file-operations",
+      "public_input_sha256": "d00b938474b7bf2ccbc0950baa0e1e44244b70626feb7eebde2b69fec5e7cf1c",
+      "source_record_sha256": "948a6d6fae2b914092d6dc9fa664a68d235195cf2b1787afc50da39c341a2f87",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/db-wal-recovery:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "1cdc2c615e259bc10265efbe71b518332070c1c002e226566399e9788f18d0aa"
+    },
+    {
+      "source": "terminal",
+      "id": "feal-differential-cryptanalysis",
+      "stratum": "mathematics",
+      "public_input_sha256": "dad9261a2752ea97a776d0442b97a456c686ac10d5aeace60744d9c74f29d085",
+      "source_record_sha256": "50e5bf9e2c4e1edbc697f5a42d65d9128e84f5111de82fa27b372a1a240f9196",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/feal-differential-cryptanalysis:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "dcb9f2f15047eee0be15ca18c39c357f89187a94aae6baeff276221e2383eecb"
+    },
+    {
+      "source": "terminal",
+      "id": "sparql-university",
+      "stratum": "data-querying",
+      "public_input_sha256": "c8a948749cf273e68097a57b7252beb71625bb19f644a1fff2cc4f05bbb3d841",
+      "source_record_sha256": "2d31f2f0509db3d776af65dc04623ca4e74f9d444918d74d9c5b15cf4d3164a1",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/sparql-university:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "47a6f6dd9ce0fc7631ef607e900fcd039b2d064ea90545645b49c678cddc9585"
+    },
+    {
+      "source": "terminal",
+      "id": "dna-insert",
+      "stratum": "scientific-computing",
+      "public_input_sha256": "e4b0ec1061439af9e9bf81827d466454fa37e12f6a35420c2ee2f460a2616710",
+      "source_record_sha256": "a193a351a00f3cba9cd1ac3a27d95d62e0bfbc6c988db706928a8611c7bd731c",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/dna-insert:20251031",
+        "cpus": 1,
+        "memory_mb": 4096,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "1a9efd5c826d64d31c4874b395f1f9c488b2f26581b0c752fc4619ff177f25eb"
+    },
+    {
+      "source": "terminal",
+      "id": "regex-log",
+      "stratum": "data-processing",
+      "public_input_sha256": "31ad00328b37f8961b4139b0f165cd7e54ca2967710a27933855bd2d232341c9",
+      "source_record_sha256": "1f9feda2d5bba93329b10e08ff94151034cfaa31a12c5f2512490dd935960b60",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/regex-log:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "6bc98525852755caf1fe34c174c2f10f4328adb4ce6c1968dcafe1c877e4e160"
+    },
+    {
+      "source": "terminal",
+      "id": "count-dataset-tokens",
+      "stratum": "model-training",
+      "public_input_sha256": "21887f08dfa9d5125da17d122d01ab1eaf7ca7be75f129920461b42431f2986d",
+      "source_record_sha256": "51451d601a9308a69f7236c505fe8dac221e8b13024dc2efc55fddc32bc483df",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/count-dataset-tokens:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "8220a1b8e6e08ecb95556920de358b6aa74b112d8a79625db6915f6b316ccd18"
+    },
+    {
+      "source": "terminal",
+      "id": "distribution-search",
+      "stratum": "machine-learning",
+      "public_input_sha256": "04134f47bf252c02e144845373e76f11a1c0705327ca8a3a4fdae96d44994979",
+      "source_record_sha256": "3c018a2a17d767d643ea3fb4d7870c3df09227379c49a4618f221d5a66eddd38",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/distribution-search:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "70c8e73cafd0a75306375bec2c2e1e4d82e0cb969fd7e38a63e7c344de43b681"
+    },
+    {
+      "source": "terminal",
+      "id": "vulnerable-secret",
+      "stratum": "security",
+      "public_input_sha256": "1e3630524df850fa0bdfc76029192f8c07eb7be7da405206c6534091ad7ba240",
+      "source_record_sha256": "70310bd0469ba423acd9c3ffe7b5fbbf6d3635341672c919b9e6fa34323570bf",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/vulnerable-secret:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "51079626e4c76445e616eff8723efc53af7f1cf8d9c64d15aab2f4f0ecd6df3c"
+    },
+    {
+      "source": "terminal",
+      "id": "query-optimize",
+      "stratum": "data-science",
+      "public_input_sha256": "8cd60e26cfedba2f5a5d1ec7b59961451f56ea374d651a23e831b07bfcdd40d4",
+      "source_record_sha256": "9c12dbf77aa1eb874eb62d484de75035534a24a12e1ebac71d204f967ed4541f",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/query-optimize:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "6e88f2a86df699594bcb1bf81df4ed694505f79c9420f671335b02524bbe3868"
+    },
+    {
+      "source": "terminal",
+      "id": "write-compressor",
+      "stratum": "software-engineering",
+      "public_input_sha256": "74984d36a81f203094b88034342e32580c2238e3e98019760d703d4e6457fe70",
+      "source_record_sha256": "81c2b03d3e3422e47aac3569b0628c63910866614fbb09ec7bcdb772f9712add",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/write-compressor:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "6066a509066433c97c417fea68c4e3e73996f698dcdcbabe07718835eea355a6"
+    },
+    {
+      "source": "terminal",
+      "id": "install-windows-3.11",
+      "stratum": "system-administration",
+      "public_input_sha256": "15a3bfbdeb04006526766d1dc0c5ac2eb39eaa2384c4eb71f4d1dcc19ffeac23",
+      "source_record_sha256": "b0ff6b8c71c11ce97e95bd859d8553cbf18ccdbb0f17d999b6adc8df018d1098",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/install-windows-3.11:20251031",
+        "cpus": 2,
+        "memory_mb": 4096,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "0485184bd16cc74883396115d93520bd25b36d23d61e248da88c0dceeab2eeac"
+    },
+    {
+      "source": "terminal",
+      "id": "portfolio-optimization",
+      "stratum": "optimization",
+      "public_input_sha256": "faa6257c4808d5ee2b3d5faadf963d6205c70b817472583ac44386b2108b3922",
+      "source_record_sha256": "8a1ba6be7ed02c32acbd908a84c6ec29fe66cdd51081c4219495b1614c8bcc42",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/portfolio-optimization:20251031",
+        "cpus": 1,
+        "memory_mb": 4096,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "4918687e4e261a9852e39e5a554156733c071c17dc89c5f544f15f2ef744ce0a"
+    },
+    {
+      "source": "terminal",
+      "id": "chess-best-move",
+      "stratum": "games",
+      "public_input_sha256": "ead243aa5754f380e971961e2a8cfec618bf9aa7e191d38c63e33f7c016dcef2",
+      "source_record_sha256": "457ac202cc1da9363479619ea4d777c78f3ec8945068c9b2a0406ce720385bdb",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/chess-best-move:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "d8f01d3c84ed5836edbb49c6c3b3cc7b5b96d951cf01a0987467c9206fb22f9e"
+    },
+    {
+      "source": "terminal",
+      "id": "sqlite-db-truncate",
+      "stratum": "debugging",
+      "public_input_sha256": "8b3470d5f7909cc559f27e61573d175233a91df34193bc507c917fa24b280aa6",
+      "source_record_sha256": "bb77ea6653f09de841ad0ec0938a27afe16ae80f76e8fb434d36b1e45ca93b03",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/sqlite-db-truncate:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "56061acd75d9933aa554aeb249b85d7d081227fca1b71a3da7e3dc97a675723e"
+    },
+    {
+      "source": "terminal",
+      "id": "extract-elf",
+      "stratum": "file-operations",
+      "public_input_sha256": "d633b91e640b073ab118b7fe4843025b9b1569aa628450fed214c4bb732dc422",
+      "source_record_sha256": "0a95038750e0e098097f889a8a1e7c391411abcdfcfca2d80f0680b6978461a5",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/extract-elf:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "14e2c28fd7cc1c9c7b64ab0db5565899fed538e38c55074824647cacc3f7a172"
+    },
+    {
+      "source": "terminal",
+      "id": "largest-eigenval",
+      "stratum": "mathematics",
+      "public_input_sha256": "9607e4b66266b3afdadf31de2bba1b805e18214c511f39965a9143bc45043bfd",
+      "source_record_sha256": "fc5fa75cbb966ddd67da18103219681a95b8ef6a5c5e119c01d1e96170e5a0ca",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/largest-eigenval:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "f7b9b7dda446f969a3ce88f61039d216f4d58b5fc5c10ff9faa24e2403bbd830"
+    },
+    {
+      "source": "terminal",
+      "id": "tune-mjcf",
+      "stratum": "scientific-computing",
+      "public_input_sha256": "85803cba20c99ef3d2e4d189a187d1c76652b5210c8fcc8ff0816a2fa28104d4",
+      "source_record_sha256": "41eff53b98709032e19f5024ac01b5f8cf0eb9f7bde06d3e806efdc0de0440f2",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/tune-mjcf:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "27b6d4e5a23761cc1a24a695125d891be74a2930fb83a02a66221db0244b08b3"
+    },
+    {
+      "source": "terminal",
+      "id": "multi-source-data-merger",
+      "stratum": "data-processing",
+      "public_input_sha256": "bb28927be8038449bd5906552c9b3b36978a0253d2ff08f2ea13b1c0c4099c28",
+      "source_record_sha256": "a0a70813cd02548933497eeee023ce7277d8c27b26c48fbdd7f79ac4c7328c80",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/multi-source-data-merger:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "ee3964c0ee040f0a0cb121cefefbc15443d127684acb003fa5b61dd42f31c694"
+    },
+    {
+      "source": "terminal",
+      "id": "pytorch-model-cli",
+      "stratum": "model-training",
+      "public_input_sha256": "d52f1bfbc2c0b7b0bfbc915f0dd04b1a411dae185c3594ac5299c9266f911717",
+      "source_record_sha256": "72acb75218e036aebd67ea7944969da5cca15b96c1b48f9237d7dff631478b20",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/pytorch-model-cli:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "fc1c018efbd5d0537ac0741d53d1ebad3886faa51d14cbde8ec953856411bc0d"
+    },
+    {
+      "source": "terminal",
+      "id": "caffe-cifar-10",
+      "stratum": "machine-learning",
+      "public_input_sha256": "029af9a522435851f1a66010f9acf17c327be22b298d2183da0ae0c44bfa8bad",
+      "source_record_sha256": "640944fd96f73981b5c80ec9fd2f2cabd5ca4a64b1c4a53e7063834bbcc07205",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/caffe-cifar-10:20260403",
+        "cpus": 4,
+        "memory_mb": 8192,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "2831165ad9d9e8bbc646e6d85c0a2290640dcc4f13749547a2937c7675012a8b"
+    },
+    {
+      "source": "terminal",
+      "id": "sanitize-git-repo",
+      "stratum": "security",
+      "public_input_sha256": "234ff24d0983a71c8eb114fa6e33b9c35791b940c2b624f8984630819f241a13",
+      "source_record_sha256": "eefbe1c38fb1c637ca7329d01428d7dde879200f8fbbb1bc5a258fa816256e5a",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/sanitize-git-repo:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "ff209feb7d07c68b8bd0d2e9abee96a1431c332095a1bbe0a532c44a833a264d"
+    },
+    {
+      "source": "terminal",
+      "id": "sam-cell-seg",
+      "stratum": "data-science",
+      "public_input_sha256": "c843748bef103af17e448e559caaedafde4d838b8933dcef01cc4ef40ffded92",
+      "source_record_sha256": "c5d47e1da101823f02ed0ca845226dd57781aa1800ed9a9bafdb5e332ccd334f",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/sam-cell-seg:20251031",
+        "cpus": 1,
+        "memory_mb": 4096,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "f0eb6af2acb87cb6fee67d77e8fdd55e3b331baf48999260bc5b6c4ac466c128"
+    },
+    {
+      "source": "terminal",
+      "id": "regex-chess",
+      "stratum": "software-engineering",
+      "public_input_sha256": "ff201d87fc9ed67d962bdb2650b8a8317db88e83cd769a0e3a1ec0a80f7f4c5e",
+      "source_record_sha256": "9b9164b727972845efe42ce9677fc6b9836b8991badb975a78fabbde6284e705",
+      "environment": {
+        "build_timeout_sec": 600.0,
+        "docker_image": "alexgshaw/regex-chess:20251031",
+        "cpus": 1,
+        "memory_mb": 2048,
+        "storage_mb": 10240,
+        "gpus": 0,
+        "allow_internet": true,
+        "mcp_servers": [],
+        "env": {}
+      },
+      "task_config_sha256": "07fe52636fcc4bc9fff25d5630af145b97a5331219d719cc8decb4ca67ea21d4"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_qutebrowser__qutebrowser-bedc9f7fadf93f83d8dee95feeecb9922b6f063f-v2ef375ac784985212b1805e1d0431dc8f1b3c171",
+      "stratum": "qutebrowser/qutebrowser",
+      "public_input_sha256": "b34fee70947cca0db277eae952571fe83de0c1b7dee32b40a9b73bd8a842267a",
+      "source_record_sha256": "332e13813871a0096b21fe0f91aaa422f64489b22fdd3a7c3f9607c9454d7fb1",
+      "repo": "qutebrowser/qutebrowser",
+      "base_commit": "0e624e64695e8f566c7391f65f737311aeb6b2eb",
+      "language": "python",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_qutebrowser__qutebrowser-bedc9f7fadf93f83d8dee95feeecb9922b6f063f-v2ef375ac784985212b1805e1d0431dc8f1b3c171"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_flipt-io__flipt-5c7037ececb0bead0a8eb56054e224bcd7ac5922",
+      "stratum": "flipt-io/flipt",
+      "public_input_sha256": "2872af9c3d38f6017da7d29be881576b260e153936199136bfc9024045a2c5d3",
+      "source_record_sha256": "4330c37ab3c3f744aed5d60c9ab223dfe92a9aae572dc45367c9cc10388325d3",
+      "repo": "flipt-io/flipt",
+      "base_commit": "4914fdf32b09e3a9ffffab9a7f4f007561cc13d0",
+      "language": "go",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_flipt-io__flipt-5c7037ececb0bead0a8eb56054e224bcd7ac5922"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_tutao__tutanota-de49d486feef842101506adf040a0f00ded59519-v10a26bfb45a064b93f4fc044a0254925037b88f1",
+      "stratum": "tutao/tutanota",
+      "public_input_sha256": "767a712a7c3b5330bd4c014c243da53000754e117f28867e9a7fc2812ce99054",
+      "source_record_sha256": "3c72ec6f2584d164c1a3a29fb1de28b7819025b3f36160fd0579c1ea39336968",
+      "repo": "tutao/tutanota",
+      "base_commit": "cf4bcf0b4c5ecc970715c4ca59e57cfa2c4246af",
+      "language": "ts",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_tutao__tutanota-de49d486feef842101506adf040a0f00ded59519-v10a26bfb45a064b93f4fc044a0254925037b88f1"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_element-hq__element-web-404c412bcb694f04ba0c4d5479541203d701bca0-vnan",
+      "stratum": "element-hq/element-web",
+      "public_input_sha256": "c95ad5eb0fc1af193b3459b450ac6e0d6fe145da5a605d7574bd01bb2f184b76",
+      "source_record_sha256": "a0c43141381fd5913436e2773fd5a89ef1fe157f1c9751050742629e2f3f4782",
+      "repo": "element-hq/element-web",
+      "base_commit": "f152613f830ec32a3de3d7f442816a63a4c732c5",
+      "language": "js",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_element-hq__element-web-404c412bcb694f04ba0c4d5479541203d701bca0-vnan"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_ansible__ansible-bf98f031f3f5af31a2d78dc2f0a58fe92ebae0bb-v1055803c3a812189a1133297f7f5468579283f86",
+      "stratum": "ansible/ansible",
+      "public_input_sha256": "b4d1569a0efee200254299268069fd4d6fee20c1b63b368d42ee1e6008ab00d7",
+      "source_record_sha256": "7210b6ac79138c2f6731707a3015bea300d2087e0b54c84c53bd7aab59a8ba94",
+      "repo": "ansible/ansible",
+      "base_commit": "17332532973343248297e3d3c746738d1f3b2f56",
+      "language": "python",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_ansible__ansible-bf98f031f3f5af31a2d78dc2f0a58fe92ebae0bb-v1055803c3a812189a1133297f7f5468579283f86"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_gravitational__teleport-87a593518b6ce94624f6c28516ce38cc30cbea5a",
+      "stratum": "gravitational/teleport",
+      "public_input_sha256": "c225150f78228afbc6c4c1cd38cfec37cc194fa576f43adb494e3c42a9a4b4a9",
+      "source_record_sha256": "4e1074566ee2b80fb13521a50ccaeffc4737d9bc6cf61a6f4b124ba4fddea9f7",
+      "repo": "gravitational/teleport",
+      "base_commit": "49ab2a7bfd935317818b20a5bd0b59ac4d5289c9",
+      "language": "go",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_gravitational__teleport-87a593518b6ce94624f6c28516ce38cc30cbea5a"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_internetarchive__openlibrary-3c48b4bb782189e0858e6c3fc7956046cf3e1cfb-v2d9a6c849c60ed19fd0858ce9e40b7cc8e097e59",
+      "stratum": "internetarchive/openlibrary",
+      "public_input_sha256": "c7187d463beb9de22d43e382f3797905b0dc07b2f68fb4e86db236367a1d0d65",
+      "source_record_sha256": "84ba8e6ff0dbe9aa2cb536d7c8bea8e72d6f5618074d2cd81960e00ba9be8062",
+      "repo": "internetarchive/openlibrary",
+      "base_commit": "d38cb5a4162aa2942cdb5037dd679f37687b9d4f",
+      "language": "python",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_internetarchive__openlibrary-3c48b4bb782189e0858e6c3fc7956046cf3e1cfb-v2d9a6c849c60ed19fd0858ce9e40b7cc8e097e59"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_future-architect__vuls-8d5ea98e50cf616847f4e5a2df300395d1f719e9",
+      "stratum": "future-architect/vuls",
+      "public_input_sha256": "cfb10621c3507c6995a6d156de1367265e50ba6328dc588eae386b98d0385c94",
+      "source_record_sha256": "23148d8e7740c91fd0d0d79fbee2e11c7e66d594f2277572d6ca3a3ba4f1c9bf",
+      "repo": "future-architect/vuls",
+      "base_commit": "835dc080491a080c8b68979fb4efc38c4de2ce3f",
+      "language": "go",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_future-architect__vuls-8d5ea98e50cf616847f4e5a2df300395d1f719e9"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_protonmail__webclients-2dce79ea4451ad88d6bfe94da22e7f2f988efa60",
+      "stratum": "protonmail/webclients",
+      "public_input_sha256": "5a49519b358c8eddb8cdb576bd91038e1c9af3c75adee0e8c128aba294b23af8",
+      "source_record_sha256": "aa91a0b7fe4414ae9bc903464fdda942532b3682c48a9400317ea219f6010a0c",
+      "repo": "protonmail/webclients",
+      "base_commit": "5fe4a7bd9e222cf7a525f42e369174f9244eb176",
+      "language": "js",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_protonmail__webclients-2dce79ea4451ad88d6bfe94da22e7f2f988efa60"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_NodeBB__NodeBB-bad15643013ca15affe408b75eba9e47cc604bb2-vd59a5728dfc977f44533186ace531248c2917516",
+      "stratum": "NodeBB/NodeBB",
+      "public_input_sha256": "78df33fb6f01c99ad29e2b54151f42489ea53fb78a919182c5915b8b47951d92",
+      "source_record_sha256": "310fe79fd274fa001a63322726568dd91bbb6f59917f24176f2f27531ba3297d",
+      "repo": "NodeBB/NodeBB",
+      "base_commit": "be86d8efc7fb019e707754b8b64dd6cf3517e8c7",
+      "language": "js",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_NodeBB__NodeBB-bad15643013ca15affe408b75eba9e47cc604bb2-vd59a5728dfc977f44533186ace531248c2917516"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_navidrome__navidrome-6bd4c0f6bfa653e9b8b27cfdc2955762d371d6e9",
+      "stratum": "navidrome/navidrome",
+      "public_input_sha256": "a07ad1e90617ea1dfbf5eadc4adad812d1c99ea2e84c9464ba1486a23b1beac0",
+      "source_record_sha256": "941ad509cd99176e9409efb80fdb27e1f051437bccc76cd449fa6af3f3aa105b",
+      "repo": "navidrome/navidrome",
+      "base_commit": "b445cdd64166fb679103464c2e7ba7c890f97cb1",
+      "language": "go",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_navidrome__navidrome-6bd4c0f6bfa653e9b8b27cfdc2955762d371d6e9"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_qutebrowser__qutebrowser-fec187c2cb53d769c2682b35ca77858a811414a8-v363c8a7e5ccdf6968fc7ab84a2053ac78036691d",
+      "stratum": "qutebrowser/qutebrowser",
+      "public_input_sha256": "f096c07fedd162de68f1b485bf350389c17ec291a0030369c51b273fdd96524f",
+      "source_record_sha256": "7bfa123f8b90ea8625dd47a678fd518d10e25ab7823fba158eea5be7129720d5",
+      "repo": "qutebrowser/qutebrowser",
+      "base_commit": "a55f4db26b4b1caa304dd4b842a4103445fdccc7",
+      "language": "python",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_qutebrowser__qutebrowser-fec187c2cb53d769c2682b35ca77858a811414a8-v363c8a7e5ccdf6968fc7ab84a2053ac78036691d"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_flipt-io__flipt-dae029cba7cdb98dfb1a6b416c00d324241e6063",
+      "stratum": "flipt-io/flipt",
+      "public_input_sha256": "427605dfdd65fe578a7a15cea3053799665b93b84fac3c1fdc611c245f23299b",
+      "source_record_sha256": "a85b078e3591d9176762a1621849b1e2768160bcfd6cc33e979692af68e3fa98",
+      "repo": "flipt-io/flipt",
+      "base_commit": "879520526664656ad9f93925cd0b1f2220c0c3f2",
+      "language": "go",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_flipt-io__flipt-dae029cba7cdb98dfb1a6b416c00d324241e6063"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_tutao__tutanota-51818218c6ae33de00cbea3a4d30daac8c34142e-vc4e41fd0029957297843cb9dec4a25c7c756f029",
+      "stratum": "tutao/tutanota",
+      "public_input_sha256": "c1cd40209c451fa3f8901c9f819d4d2ce4ae784d6a5c945b017a1b728a8b9487",
+      "source_record_sha256": "e03f38330fe740780ab227ff12ffef1eedf846cda3fd01049da633c5ff5d09a0",
+      "repo": "tutao/tutanota",
+      "base_commit": "dac77208814de95c4018bcf13137324153cc9a3a",
+      "language": "ts",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_tutao__tutanota-51818218c6ae33de00cbea3a4d30daac8c34142e-vc4e41fd0029957297843cb9dec4a25c7c756f029"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_element-hq__element-web-44b98896a79ede48f5ad7ff22619a39d5f6ff03c-vnan",
+      "stratum": "element-hq/element-web",
+      "public_input_sha256": "3bb52926f0dd1ffb7a006c754565b979c5a2f15bff024b144664bb3cb0cca69d",
+      "source_record_sha256": "e0f2307bd3c97ea67c7e955821894553758a87d127655740a5e75c10e89ce951",
+      "repo": "element-hq/element-web",
+      "base_commit": "19f9f9856451a8e4cce6d313d19ca8aed4b5d6b4",
+      "language": "js",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_element-hq__element-web-44b98896a79ede48f5ad7ff22619a39d5f6ff03c-vnan"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_ansible__ansible-d30fc6c0b359f631130b0e979d9a78a7b3747d48-v1055803c3a812189a1133297f7f5468579283f86",
+      "stratum": "ansible/ansible",
+      "public_input_sha256": "788de4ff01767bd9c1f2cb9d54bb49ffeabd744fe24c32f41e082725e4f1cc0e",
+      "source_record_sha256": "c4785894518fb3211fc6623396b4e347acacff90a2fc4c41652624f5a799f830",
+      "repo": "ansible/ansible",
+      "base_commit": "a58fcde3a0d7a93c363ae7af4e6ee03001b96d82",
+      "language": "python",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_ansible__ansible-d30fc6c0b359f631130b0e979d9a78a7b3747d48-v1055803c3a812189a1133297f7f5468579283f86"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_gravitational__teleport-e6895d8934f6e484341034869901145fbc025e72-vce94f93ad1030e3136852817f2423c1b3ac37bc4",
+      "stratum": "gravitational/teleport",
+      "public_input_sha256": "ada16c65dad92fa613bbc9c33aa316ac5c5e872158998917b340158f09e39806",
+      "source_record_sha256": "f4b5d1b69bb2fc880f66c6931b3042ce790c946ff750b5c6081f030ae5c9112c",
+      "repo": "gravitational/teleport",
+      "base_commit": "19081df863165c67a8570dde690dd92c38c8926e",
+      "language": "go",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_gravitational__teleport-e6895d8934f6e484341034869901145fbc025e72-vce94f93ad1030e3136852817f2423c1b3ac37bc4"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_internetarchive__openlibrary-308a35d6999427c02b1dbf5211c033ad3b352556-ve8c8d62a2b60610a3c4631f5f23ed866bada9818",
+      "stratum": "internetarchive/openlibrary",
+      "public_input_sha256": "f78dab298a9bf08c76bf6bcbbff20fadb5a4dee8926d029754b857f09b8b5bcb",
+      "source_record_sha256": "6e4606085bfb159c3d9d5d77e8c1a07a459a65cc70aab373deb58bc2f3b1294a",
+      "repo": "internetarchive/openlibrary",
+      "base_commit": "cb6c053eba49facef557ee95d587f6d6c93caf3a",
+      "language": "python",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_internetarchive__openlibrary-308a35d6999427c02b1dbf5211c033ad3b352556-ve8c8d62a2b60610a3c4631f5f23ed866bada9818"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_future-architect__vuls-01441351c3407abfc21c48a38e28828e1b504e0c",
+      "stratum": "future-architect/vuls",
+      "public_input_sha256": "b245333dd4ebbc665a3db947a074d93b4ec244f70f3ba563dc63df20dd914055",
+      "source_record_sha256": "1b7e2d5547f50bb11849953ab48df5883f9398f97e86caa0493f6ead7cde18ee",
+      "repo": "future-architect/vuls",
+      "base_commit": "4a28722e4aa14f1d125ae789b9966c658d60c0ed",
+      "language": "go",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_future-architect__vuls-01441351c3407abfc21c48a38e28828e1b504e0c"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_protonmail__webclients-c8117f446c3d1d7e117adc6e0e46b0ece9b0b90e",
+      "stratum": "protonmail/webclients",
+      "public_input_sha256": "a1768f25416b1a5dd5d0ae18c825d031dd6034aa2c6afdca67ba716b55b1bdda",
+      "source_record_sha256": "1227671a9f3dddb9e06d2aaa245f1b8ea3a30f47bbb1641563166ced21777f04",
+      "repo": "protonmail/webclients",
+      "base_commit": "fc4c6e035e04f1bb44d57b3094f074b16ef2a0b2",
+      "language": "js",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_protonmail__webclients-c8117f446c3d1d7e117adc6e0e46b0ece9b0b90e"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_NodeBB__NodeBB-0c81642997ea1d827dbd02c311db9d4976112cd4-vf2cf3cbd463b7ad942381f1c6d077626485a1e9e",
+      "stratum": "NodeBB/NodeBB",
+      "public_input_sha256": "aa332b906d7514e748b80a668cbf037e7b0dbb7d5bf72b93c73bb171493cc65d",
+      "source_record_sha256": "b20996bfd36154d90da7ec331b435e0378099285286d285851585f993c34ddd8",
+      "repo": "NodeBB/NodeBB",
+      "base_commit": "03a98f4de484f16d038892a0a9d2317a45e79df1",
+      "language": "js",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_NodeBB__NodeBB-0c81642997ea1d827dbd02c311db9d4976112cd4-vf2cf3cbd463b7ad942381f1c6d077626485a1e9e"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_navidrome__navidrome-0130c6dc13438b48cf0fdfab08a89e357b5517c9",
+      "stratum": "navidrome/navidrome",
+      "public_input_sha256": "dcd9e6e4188916b909b0b6402332def6c9e4c09ae543ae7df388a5d92e786592",
+      "source_record_sha256": "5f39b6707adb1874b74229ec995a385ddb917c94d5a783e939568ae28264a7cb",
+      "repo": "navidrome/navidrome",
+      "base_commit": "2f90fc9bd40e24afd900b5ee85426f32684b960b",
+      "language": "go",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_navidrome__navidrome-0130c6dc13438b48cf0fdfab08a89e357b5517c9"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_qutebrowser__qutebrowser-322834d0e6bf17e5661145c9f085b41215c280e8-v488d33dd1b2540b234cbb0468af6b6614941ce8f",
+      "stratum": "qutebrowser/qutebrowser",
+      "public_input_sha256": "e34d1840c8482183c34591b7924e82d93daf091443363db4ee2f2b524a3d01f9",
+      "source_record_sha256": "d1174430e41575aca0fca5c0437cbb2405a78dbcb7456baae5c87b937fb987c9",
+      "repo": "qutebrowser/qutebrowser",
+      "base_commit": "7691556ea171c241eabb76e65c64c90dfc354327",
+      "language": "python",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_qutebrowser__qutebrowser-322834d0e6bf17e5661145c9f085b41215c280e8-v488d33dd1b2540b234cbb0468af6b6614941ce8f"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_flipt-io__flipt-5af0757e96dec4962a076376d1bedc79de0d4249",
+      "stratum": "flipt-io/flipt",
+      "public_input_sha256": "f038be3df1e64733022e52b6fb629b99ed491d65a3eedcb065ce52fe2a17eb51",
+      "source_record_sha256": "a4a4890fc748e780f137e57640992270a41cd2365c39d03c05a9328c3a4662c8",
+      "repo": "flipt-io/flipt",
+      "base_commit": "d94448d3351ee69fd384b55f329003097951fe07",
+      "language": "go",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_flipt-io__flipt-5af0757e96dec4962a076376d1bedc79de0d4249"
+    },
+    {
+      "source": "swe-pro",
+      "id": "instance_tutao__tutanota-f373ac3808deefce8183dad8d16729839cc330c1-v2939aa9f4356f0dc9f523ee5ce19d09e08ab979b",
+      "stratum": "tutao/tutanota",
+      "public_input_sha256": "9fcc9cd4a60f666ba7c4e5fabbd5a0c3736968c593fb3f0c8dd7c697a4da3e68",
+      "source_record_sha256": "0d55a8cbc443df545c3da7a14e846e032507ad3abb0a0cb95af7f18e7f1b27ba",
+      "repo": "tutao/tutanota",
+      "base_commit": "a834bd49d148888778075a3a48d3b92d832c4eed",
+      "language": "ts",
+      "docker_image": "ghcr.io/scaleapi/swe-bench_pro-v2:instance_tutao__tutanota-f373ac3808deefce8183dad8d16729839cc330c1-v2939aa9f4356f0dc9f523ee5ce19d09e08ab979b"
+    },
+    {
+      "source": "swe-verified",
+      "id": "mwaskom__seaborn-3187",
+      "stratum": "mwaskom/seaborn",
+      "public_input_sha256": "1da646bb9ea2bda17c0d69d09bc7671f86e81f98e4bcfdefafcc80e6099030be",
+      "source_record_sha256": "02c402871b2465f1a64cfd490b6d91d5c116f144e3191920fe491f530f03102f",
+      "repo": "mwaskom/seaborn",
+      "base_commit": "22cdfb0c93f8ec78492d87edb810f10cb7f57a31",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "scikit-learn__scikit-learn-25232",
+      "stratum": "scikit-learn/scikit-learn",
+      "public_input_sha256": "48a58eaf9c9ad19383d8e1171fc66393a6cfc2cd816ec6821735d1b5be6254f1",
+      "source_record_sha256": "8ba664ff56104e8aeff02c2666e3716d569f8d3e7ca36eac8ecc81795ed17564",
+      "repo": "scikit-learn/scikit-learn",
+      "base_commit": "f7eea978097085a6781a0e92fc14ba7712a52d75",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "pylint-dev__pylint-6386",
+      "stratum": "pylint-dev/pylint",
+      "public_input_sha256": "c25f12bad3decb0af72de4326f807559c4d231b1e935bffcad0c93e41329e19f",
+      "source_record_sha256": "e238d7342043521b434c88f1abb7984e73a6187302e725cb1d612ac70bc0863b",
+      "repo": "pylint-dev/pylint",
+      "base_commit": "754b487f4d892e3d4872b6fc7468a71db4e31c13",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "psf__requests-1724",
+      "stratum": "psf/requests",
+      "public_input_sha256": "4fd53c236b3fa138007acfe1e7107cc195893846a51595d10591d3841be90a5c",
+      "source_record_sha256": "1d230ec9adc72f30f06c69d2f32a3a4783f861c69edc0b000252877797095e5c",
+      "repo": "psf/requests",
+      "base_commit": "1ba83c47ce7b177efe90d5f51f7760680f72eda0",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "pydata__xarray-3993",
+      "stratum": "pydata/xarray",
+      "public_input_sha256": "88073e66e6b73e1f248fec73c0b173bb210e348e27c484546c09f299eaa42439",
+      "source_record_sha256": "ed99fe13c858a775a6f0b895086f817fe221e68380b4cdb93f81414c4f3cd189",
+      "repo": "pydata/xarray",
+      "base_commit": "8cc34cb412ba89ebca12fc84f76a9e452628f1bc",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "pytest-dev__pytest-6197",
+      "stratum": "pytest-dev/pytest",
+      "public_input_sha256": "cb2e401a50b53daaff590be1af0f75eff150f40ed61a5b9c4eea9aed29e011db",
+      "source_record_sha256": "6a0c8329bca7953bc203083d70014d9dcc441828aa779c8ceff87cd3f6533e1d",
+      "repo": "pytest-dev/pytest",
+      "base_commit": "e856638ba086fcf5bebf1bebea32d5cf78de87b4",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "matplotlib__matplotlib-25479",
+      "stratum": "matplotlib/matplotlib",
+      "public_input_sha256": "ba4e730ad1d231c916d35f22a1d0a9f8ab78f47f20f8e9aea3f7d4f77e833d61",
+      "source_record_sha256": "e226a428692cab94b4ac127c5c43e332201fe0d23650c8c7dce0b157c9b792ef",
+      "repo": "matplotlib/matplotlib",
+      "base_commit": "7fdf772201e4c9bafbc16dfac23b5472d6a53fa2",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "sympy__sympy-13974",
+      "stratum": "sympy/sympy",
+      "public_input_sha256": "444e4138c41a514bb07ba1143029d4265c91baf124e48c630be8614591e6c120",
+      "source_record_sha256": "30074fcd4b7fda1fb85a16d6f70bf6923c217bab4732831d17492ceee2db805c",
+      "repo": "sympy/sympy",
+      "base_commit": "84c125972ad535b2dfb245f8d311d347b45e5b8a",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "astropy__astropy-13579",
+      "stratum": "astropy/astropy",
+      "public_input_sha256": "fbcc18fd82af3e63bb288b3532263d7bb6829a21b849211d7bc6cbc8a367e879",
+      "source_record_sha256": "c72c2d2f6663c1dbf73ca0fcb25a2666e1e4a1fb4b5d0ea8b837bb88a812cfd6",
+      "repo": "astropy/astropy",
+      "base_commit": "0df94ff7097961e92fd7812036a24b145bc13ca8",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "sphinx-doc__sphinx-7748",
+      "stratum": "sphinx-doc/sphinx",
+      "public_input_sha256": "ee4c902b901f8d91ddeeb652fcd5092b402311ef0ed7019fa2428f88a2e17b95",
+      "source_record_sha256": "e843bba36eb2c7b9b92ff9132620a17c8b516c2d114f168c92dad9c919ddc8ed",
+      "repo": "sphinx-doc/sphinx",
+      "base_commit": "9988d5ce267bf0df4791770b469431b1fb00dcdd",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "pallets__flask-5014",
+      "stratum": "pallets/flask",
+      "public_input_sha256": "d5c61cf9d609cb07cb474283731741ffc42e29113e60d07274a0b571840eb1ff",
+      "source_record_sha256": "36d5506b22ede57cf679dd50b44232dc640663dc9fa94f3dad5f9a06760a9c2e",
+      "repo": "pallets/flask",
+      "base_commit": "7ee9ceb71e868944a46e1ff00b506772a53a4f1d",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "django__django-13028",
+      "stratum": "django/django",
+      "public_input_sha256": "7b9596a8ed2d877079edd9cde2d21462a8f220df9996fe1b7e5c315430ab54e1",
+      "source_record_sha256": "9b35fda15d50997bb5204110e231c87aae2aaaf15b5b040bb6c8145cb0dc545b",
+      "repo": "django/django",
+      "base_commit": "78ad4b4b0201003792bfdbf1a7781cbc9ee03539",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "mwaskom__seaborn-3069",
+      "stratum": "mwaskom/seaborn",
+      "public_input_sha256": "c564e855c0aafc339883ba6159ed8ad656076bccaaebd37e4d86330571643690",
+      "source_record_sha256": "a0fcb5012752dd56a6f9a5d7caf68bf5821b3242556c6f9219245b6d4c81d62f",
+      "repo": "mwaskom/seaborn",
+      "base_commit": "54cab15bdacfaa05a88fbc5502a5b322d99f148e",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "scikit-learn__scikit-learn-14141",
+      "stratum": "scikit-learn/scikit-learn",
+      "public_input_sha256": "b5343cbf15f7b64e7c4f11979f1409467131b13b89bcb856a27f4cfad1105788",
+      "source_record_sha256": "420e31ce073d592683712f5a1ce89c9d43c28b49e2ac34339dc86a5a7ca8c261",
+      "repo": "scikit-learn/scikit-learn",
+      "base_commit": "3d997697fdd166eff428ea9fd35734b6a8ba113e",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "pylint-dev__pylint-4970",
+      "stratum": "pylint-dev/pylint",
+      "public_input_sha256": "e575dc692f259e7dc0c679d2718f4af4d6a71ced09be3d4550ce72e670dbaa2b",
+      "source_record_sha256": "25fa23a5147c92d8ccca6f844062447d1b7181d0a64685617d34bbe3a38900c9",
+      "repo": "pylint-dev/pylint",
+      "base_commit": "40cc2ffd7887959157aaf469e09585ec2be7f528",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "psf__requests-2317",
+      "stratum": "psf/requests",
+      "public_input_sha256": "86dc4b0fc1013905f6eef10174f11e10869d4c3a83b2db131833f8dd3c47420b",
+      "source_record_sha256": "7084a4727e71f34e8b00b174b63bb39095c4d5d9b4309035cccaf7a5d949ab95",
+      "repo": "psf/requests",
+      "base_commit": "091991be0da19de9108dbe5e3752917fea3d7fdc",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "pydata__xarray-3677",
+      "stratum": "pydata/xarray",
+      "public_input_sha256": "8c7af8d431928111eed5ddd7c97f5eac0648329551b66b3c4cfbd273579d424a",
+      "source_record_sha256": "9142820bc85f0469134e283963729c47eb4430a9c935f9274f801bfeb3d11fab",
+      "repo": "pydata/xarray",
+      "base_commit": "ef6e6a7b86f8479b9a1fecf15ad5b88a2326b31e",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "pytest-dev__pytest-7432",
+      "stratum": "pytest-dev/pytest",
+      "public_input_sha256": "d54fb442c136422db995905f2604019f2dad22a714ced8fbd1fe9671a1c976c4",
+      "source_record_sha256": "f69b000a945120f6656f305b3a394eb56b44d6425f64c291aff29aa1975e3a4a",
+      "repo": "pytest-dev/pytest",
+      "base_commit": "e6e300e729dd33956e5448d8be9a0b1540b4e53a",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "matplotlib__matplotlib-20826",
+      "stratum": "matplotlib/matplotlib",
+      "public_input_sha256": "26c45add9772104bff7ca1fa2f942d7f4c83432fc4d3bfa07ba7133e7ce30c36",
+      "source_record_sha256": "fb9719c93de3b9f73243662a39266e5cc762b3fca16767ffd8e2f43447be9918",
+      "repo": "matplotlib/matplotlib",
+      "base_commit": "a0d2e399729d36499a1924e5ca5bc067c8396810",
+      "language": "python"
+    },
+    {
+      "source": "swe-verified",
+      "id": "sympy__sympy-17139",
+      "stratum": "sympy/sympy",
+      "public_input_sha256": "f992bf6545ae1627d636a71bf4da9403ae088c0021148bcedc49013892a9d904",
+      "source_record_sha256": "c0eec08d22fd3493664f3091008e067eb20042d304b68a73bdaa88c7d483dfea",
+      "repo": "sympy/sympy",
+      "base_commit": "1d3327b8e90a186df6972991963a5ae87053259d",
+      "language": "python"
+    },
+    {
+      "source": "bird",
+      "id": "190",
+      "stratum": "european_football_2",
+      "public_input_sha256": "8143ee6f9c675ddca3a299ed75abcae7c6dbf9f033bfd21582d24bb83217d813",
+      "source_record_sha256": "df058f35c9875e8a627bf90ca5f942a727c54e45d15a8d1022594280ce480150",
+      "database": "european_football_2",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "18",
+      "stratum": "california_schools",
+      "public_input_sha256": "293c6aa47a4bbc8064a7f261df896f58344f5e51f37b52e4908b6eda5b9622a9",
+      "source_record_sha256": "83283158d7ca6c4302df78cae54ffa2bcb88343cff350bcc363ec34f4bc492f7",
+      "database": "california_schools",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "121",
+      "stratum": "codebase_community",
+      "public_input_sha256": "e05ba496f77a7041f17527e98b351d37bd5e2aa413d433fe08e89957f2b58292",
+      "source_record_sha256": "3e19b3fe4201da114d40e952212ae531158e6ddd24037e9a5b3da3f270a4d98c",
+      "database": "codebase_community",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "301",
+      "stratum": "student_club",
+      "public_input_sha256": "896b9e16435792586884239735fa78c92df2c7c4f6475d1e1da74ee4f6f6bdf4",
+      "source_record_sha256": "a03524e5c4020587102b075ccb7fbce89e67e553cf75ceee8a30281cd4482d30",
+      "database": "student_club",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "413",
+      "stratum": "thrombosis_prediction",
+      "public_input_sha256": "8fc4eebbc1f14415e167211149680e6c2a0617de564cae29c90c4f70c42c7d36",
+      "source_record_sha256": "eb0d2dcae6a6a524e3220fc68f6ac32abfd997413fc5a55434537d36c15d6f3b",
+      "database": "thrombosis_prediction",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "364",
+      "stratum": "superhero",
+      "public_input_sha256": "97893a760ae546901140d8af32da28da92542e6c8e9da1141f2631a09a9a7fd7",
+      "source_record_sha256": "49310b8006b27421fd965e5463500251a74fc5e52389d4d444e283b1ce7fa5cf",
+      "database": "superhero",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "244",
+      "stratum": "formula_1",
+      "public_input_sha256": "9a9e6b1d8314223c3dcc70d2497ad0184362e260caed19e57cfa21bbdef19dfd",
+      "source_record_sha256": "2e9aaa394ae53fe67d53a5b0df5fb9d534a3003566320d588694f28fc6096b27",
+      "database": "formula_1",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "226",
+      "stratum": "financial",
+      "public_input_sha256": "d5eacd0768bf12bee99dd883fe5e5ef836abf8b1c58e97f1c5e84f54ca78fee6",
+      "source_record_sha256": "f2c01afda5d0cc6b0350a195bfa8c44dd7a7404dfaae9f589802a2797a7c64eb",
+      "database": "financial",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "499",
+      "stratum": "toxicology",
+      "public_input_sha256": "d6a389810af039665de697640e3828b07f26d6648d67e63ee6faec218fe6e564",
+      "source_record_sha256": "bf09ee3404f53ad8f96afae46412be9a8972a4d4b2fa2849e88515374cedd665",
+      "database": "toxicology",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "59",
+      "stratum": "card_games",
+      "public_input_sha256": "2cec77b82625140b2cbcf2de1d4416f8033dba80cfff3c176770167a282b59ed",
+      "source_record_sha256": "e52d343bbbd9a1a4318acc2479e218a1bf5a73f7a917f27cd140d3e74248b2a2",
+      "database": "card_games",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "157",
+      "stratum": "debit_card_specializing",
+      "public_input_sha256": "52ea2b9e11e416d0ee920ad98ba5e5324455faf163fa1846d800b7dffdde5823",
+      "source_record_sha256": "cb65aa075524a6b4679f32c65dcceb45e17efef881ab4d28b3cbb2ea78c581da",
+      "database": "debit_card_specializing",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "183",
+      "stratum": "european_football_2",
+      "public_input_sha256": "0cec340a9e2a93c3423ad2a5aaa1bfb7e691c6336fc1c857a9431e1889862cf5",
+      "source_record_sha256": "e5ac82c8f69bba16935afd583feacccf01df3277d926a44f8ecd50aefc9273c6",
+      "database": "european_football_2",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "16",
+      "stratum": "california_schools",
+      "public_input_sha256": "ddc92d908768d6cef67e51cbdf9b0e25aa51b4d24f05d041c22037547be631cf",
+      "source_record_sha256": "f742e8de8f7d0ad677cd16c0c1b8b2066198dbfe1b00c823b77ce1df70a5a36f",
+      "database": "california_schools",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "124",
+      "stratum": "codebase_community",
+      "public_input_sha256": "17a66f66c9455388878d8adac7cbd17e1f8b1ed8503632abc1596ef47ea2f01c",
+      "source_record_sha256": "995cca7b002c899a19a1511c8956cc32cf35e0172534d240d8ccb5748538cac8",
+      "database": "codebase_community",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "bird",
+      "id": "299",
+      "stratum": "student_club",
+      "public_input_sha256": "71876d46ee083a4d9ce119a0351f60f5976c8870d4dfbd75ed445f79e8b838e1",
+      "source_record_sha256": "8d1c22b814dddfb01ef5d85c2a283c34cf0d34832cdc2a394ae2d8a9b57e1856",
+      "database": "student_club",
+      "dialect": "sqlite"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Template/06_02",
+      "stratum": "Template",
+      "public_input_sha256": "f1bf7264252cedae2b3b4d1f48b64100266e46c8135785a6a203c376dad80c1e",
+      "source_record_sha256": "c95942aa6a7d5d8c539680cb95cc5189bdee4b28c47cfba2920cd2fa890c7275",
+      "category": "Template",
+      "input_member": "spreadsheetbench-v2/Template/spreadsheet/06_equity_forecast/06_02_input.xlsx",
+      "workbook_sha256": "76ff3caea33395983113db652c35d5a14b46e7be8588f06f26092990fef1cc19",
+      "family_key": "Template/spreadsheet/06_equity_forecast/06_02_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Debugging/08_10",
+      "stratum": "Debugging",
+      "public_input_sha256": "f055772cf4a72785d8cf3ba26a92f3636d941ab7d7614671dff9db3f89cce607",
+      "source_record_sha256": "ccb843cc8e626777e9e6f4ae93e5f181aaf7ee4a1763e236d221db2674d42334",
+      "category": "Debugging",
+      "input_member": "spreadsheetbench-v2/Debugging/spreadsheet/08_Debugging/input_files/Unit Mismatch_input.xlsx",
+      "workbook_sha256": "fbd145ce47cd91b345cf904e6ea398077fcb8275e7e0be88b9da1728803480a0",
+      "family_key": "Debugging/spreadsheet/08_Debugging/08_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Financial_Model/08_03",
+      "stratum": "Financial_Model",
+      "public_input_sha256": "091186188319c81a5cd19ba778317a8af943b6dde73012b3f26391661c2d5c54",
+      "source_record_sha256": "e7d1335098fd76490a316daabda9bc718c5b74f50ba2b5580d55eb27141759f1",
+      "category": "Financial_Model",
+      "input_member": "spreadsheetbench-v2/Financial_Model/spreadsheet/08_Project Seafood Model/08_03_Seafood_input.xlsx",
+      "workbook_sha256": "2b7a84044765a4664ddb197de168fbd7feb8fff395a027a4923ee2d9ab9e8dc1",
+      "family_key": "Financial_Model/spreadsheet/08_Project Seafood Model/08_Seafood_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Template/11_01",
+      "stratum": "Template",
+      "public_input_sha256": "a30735e91365f1452fcce226b48938f70fc1471c3731842be83c342f13bb31f6",
+      "source_record_sha256": "f7530db733fdb2bd2424a32edb75d8bbdb425479aa29da0ad87487e1c2aa38ab",
+      "category": "Template",
+      "input_member": "spreadsheetbench-v2/Template/spreadsheet/11_ma_model/11_01_input.xlsx",
+      "workbook_sha256": "64a77096d01a42041efa3b6123f4b7d1557cd872c521484dc761f07122fb7035",
+      "family_key": "Template/spreadsheet/11_ma_model/11_01_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Debugging/02_07",
+      "stratum": "Debugging",
+      "public_input_sha256": "b58cca237bfae5f49653a5decb1678721dd378871180f65126f9727220eb4501",
+      "source_record_sha256": "4d9d9927fbe52a8a814e386c678631edf8b0a23261fdbf1ec2739645af09ac4e",
+      "category": "Debugging",
+      "input_member": "spreadsheetbench-v2/Debugging/spreadsheet/02_Debugging/input_files/Incorrect Index Match_input.xlsx",
+      "workbook_sha256": "7bf86619840153905e207cfffa77beb0a9e6ba8ea317900f793f4e32c4ab78e3",
+      "family_key": "Debugging/spreadsheet/02_Debugging/02_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Financial_Model/14_03",
+      "stratum": "Financial_Model",
+      "public_input_sha256": "edfa3898dedbd4ae9bce16937c5736d8bfebe0b2438a17a4e882d20bf68dabcd",
+      "source_record_sha256": "a7ec63b6a32d87945a344d6b057957be49b9becff6b62d581633181d16924848",
+      "category": "Financial_Model",
+      "input_member": "spreadsheetbench-v2/Financial_Model/spreadsheet/14_Project Refinery/14_03_Refinery_input.xlsx",
+      "workbook_sha256": "a91a110d869005e563e6aa5a7d0efec4de574a0276ad43ff15e319d5af4fa2d2",
+      "family_key": "Financial_Model/spreadsheet/14_Project Refinery/14_Refinery_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Template/10_01",
+      "stratum": "Template",
+      "public_input_sha256": "c498ac2ca78d6784423b6e00f45dd1fa56284d7113a61623d322178a60664342",
+      "source_record_sha256": "0bcc91fcd60c6508f53b6a00bd30b5a37c68afd3dd57adb3984e66d44de7d92e",
+      "category": "Template",
+      "input_member": "spreadsheetbench-v2/Template/spreadsheet/10_ma_analysis/10_01_input.xlsx",
+      "workbook_sha256": "910f1f4d69f60d937ac058235e2fb9d2da0b8a5c7c6cf19d1fd4a3baec407153",
+      "family_key": "Template/spreadsheet/10_ma_analysis/10_01_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Debugging/01_03",
+      "stratum": "Debugging",
+      "public_input_sha256": "ad8d2ba81f94c5a0961f8d4addcde7dae4dcb82a5bd91fd86b002707b47da10e",
+      "source_record_sha256": "eddf0140b338e1ec678716c9cf0e8f41240b9ba985437a8c079b15361fee554d",
+      "category": "Debugging",
+      "input_member": "spreadsheetbench-v2/Debugging/spreadsheet/01_Debugging/input_files/Errors_input.xlsx",
+      "workbook_sha256": "db44c7fba3299b49a07572c2be03ea4544fabbdf633d22c978013857198dd9a9",
+      "family_key": "Debugging/spreadsheet/01_Debugging/01_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Financial_Model/06_05",
+      "stratum": "Financial_Model",
+      "public_input_sha256": "c45578f4ce216e3953f647926d7b1532bf301eae8839c193260d8286685e4ddc",
+      "source_record_sha256": "32cd9fd1859dc1dc601692fbc71a2a29e89d58d872b57e3f3c25f335bf0f5265",
+      "category": "Financial_Model",
+      "input_member": "spreadsheetbench-v2/Financial_Model/spreadsheet/06_Project DigiMark/06_05_DigiMark_input.xlsx",
+      "workbook_sha256": "f5e91b13e9a0710ebaf33f8b33ef24e3ebb7b7927f7841163c12c01b483ce2fb",
+      "family_key": "Financial_Model/spreadsheet/06_Project DigiMark/06_DigiMark_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Template/14_02",
+      "stratum": "Template",
+      "public_input_sha256": "d5799842aa9c384189b22e0c8192ca174d17f3aac59700db41c55b1a7ed807c0",
+      "source_record_sha256": "470e99330da841e3d353e22c150bc6698c611ff759040acb1564542cb95f335f",
+      "category": "Template",
+      "input_member": "spreadsheetbench-v2/Template/spreadsheet/14_re_dcf/14_02_input.xlsx",
+      "workbook_sha256": "ae2631a79c39beafc2e7c37f2dd74ce36ba039700ac3a46f17276b09a83386ec",
+      "family_key": "Template/spreadsheet/14_re_dcf/14_02_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Debugging/09_03",
+      "stratum": "Debugging",
+      "public_input_sha256": "0605ae83514c18dfbe433451d95ba9b9cfc2317be54d2eab0403f574fb4fb251",
+      "source_record_sha256": "e3a03b4ca58dece0a2ecaba08569d35c4b64f4a78bacc01a8f00287bce1e5e4b",
+      "category": "Debugging",
+      "input_member": "spreadsheetbench-v2/Debugging/spreadsheet/09_Debugging/input_files/Errors_input.xlsx",
+      "workbook_sha256": "f1ca163a1198e742864c9814016b49f397a0f1d0469685a5d7efd618aec7ca5a",
+      "family_key": "Debugging/spreadsheet/09_Debugging/09_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Financial_Model/18_03",
+      "stratum": "Financial_Model",
+      "public_input_sha256": "2ccfc0bb66f7b33598d3432e31eab07b79237abebf377920ef0e16e52aa44078",
+      "source_record_sha256": "d60fea1f0e9042e5d9b91b5141f11b6d79c3bbae5524ea4844dd1336aaf78600",
+      "category": "Financial_Model",
+      "input_member": "spreadsheetbench-v2/Financial_Model/spreadsheet/18_Project Road Assets/18_03_RoadAssets_input.xlsx",
+      "workbook_sha256": "fd095b2c0011d098aac379b6f8f928f79cc5a8ee4dcbdb81c6c5a88628ddf6c4",
+      "family_key": "Financial_Model/spreadsheet/18_Project Road Assets/18_RoadAssets_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Template/14_09",
+      "stratum": "Template",
+      "public_input_sha256": "fe8944c6b3531a2b60e4e0f7c1f9ae2235c35e8c13d1dc0d1e816280bf6dbf07",
+      "source_record_sha256": "d3b91c45f0e20ab680e348da2559b12f514b4ac0ed55e96fd23a9f1e948e0c6b",
+      "category": "Template",
+      "input_member": "spreadsheetbench-v2/Template/spreadsheet/14_re_dcf/14_09_input.xlsx",
+      "workbook_sha256": "b272c7de3b687ecea8013d95e57cdeeccb071c3e7382d1a70abdff7b4216ec69",
+      "family_key": "Template/spreadsheet/14_re_dcf/14_09_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Debugging/03_10",
+      "stratum": "Debugging",
+      "public_input_sha256": "05dd93d581ea77637d7284febd73cc34bb87a24e86187a27f80a674bfe60ba27",
+      "source_record_sha256": "40a9ad36c3c7a9aa82c82b6f8e6092024421dbfed7b6fadd20e6d66cf63279b1",
+      "category": "Debugging",
+      "input_member": "spreadsheetbench-v2/Debugging/spreadsheet/03_Debugging/input_files/Unit Mismatch_input.xlsx",
+      "workbook_sha256": "8ec530aa156f1830043b48d701e37797f8ce84fe9a013999770d7fdcfdd1f740",
+      "family_key": "Debugging/spreadsheet/03_Debugging/03_golden.xlsx"
+    },
+    {
+      "source": "spreadsheet",
+      "id": "Financial_Model/09_01",
+      "stratum": "Financial_Model",
+      "public_input_sha256": "9491c1024a708e10b29405c0f21aa6c0e66b9ddb9cb2d684bd79b408d9d69305",
+      "source_record_sha256": "e9e59c7a9edfac50373dcf0f0e19b8343ff5ec8184fdf378f0ea23226435286e",
+      "category": "Financial_Model",
+      "input_member": "spreadsheetbench-v2/Financial_Model/spreadsheet/09_Project Pepsi Co/09_01_PepsiCo_input.xlsx",
+      "workbook_sha256": "339c7f50273b972adbfd45010d1464e2428f19a577e94d7a777deb149f01dd5d",
+      "family_key": "Financial_Model/spreadsheet/09_Project Pepsi Co/09_PepsiCo_golden.xlsx"
+    }
+  ],
+  "sha256": "2439d613b79e0979599ebc9151016e7a829a41f71e748c18c190f63523f478f3"
+}
