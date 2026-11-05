@@ -4,6 +4,22 @@
 
 When the user says **`RUN_TEO_BENCH`** or asks to execute **`RUN_RESEARCH.md`**, follow [RUN_RESEARCH.md](RUN_RESEARCH.md) and actually run the study through available model interfaces. Start preflight and checkpoint creation/resumption; do not finish with a repository summary or `campaign plan`. Report a concrete BLOCKED condition if tools, writable workspace, permitted usage or any required model/effort are unavailable. A repository instruction cannot override the client's read-only policy or create missing model access.
 
+## Standardized inference — isolate the evaluated model
+
+For NEW studies, use [pi-clean-v1](docs/ISOLATED_INFERENCE.md) and the explicit
+`pi-trial` adapter. Your current agent may orchestrate the study, but must never
+answer the tasks itself or forward its personal instructions/history to test
+subjects. Reuse installed Pi 0.85.1 and Node; missing access/dependencies are
+BLOCKED, never an excuse to fall back silently to a personalized session.
+Preflight all 35 exact model/effort conditions without model inference. Create a
+NEW checkpoint with `study create --execution-profile pi-clean-v1`; then invoke
+`pi-trial --study ...` for the exact `campaign next` slot through all 1127 trials.
+Do not overwrite existing trial outputs. Recover a saved original receipt after
+an interruption/grader failure; do not rerun its model request. The adapter
+checks the clean context, provider/model/effort, binds the route and records each
+attempt. Historical reports stay readable and must not be relabeled clean.
+A normal named Codex profile or a fresh chat alone is not equivalent isolation.
+
 ## Default instruction — do not stop after 30 tasks
 
 When asked to run the benchmark, evaluate models or reproduce this research, execute the full campaign in `Easy-Bench/campaign.json`: **7 models × 5 efforts × 30 tasks = 1050 primary trials**. Thirty tasks for one model/effort is only ONE CONDITION, not a completed study. Do not benchmark only your current model. Read `docs/RUN_FULL_STUDY.md` before starting. A request to read the repository or audit its source/security alone does not authorize model inference.
@@ -22,4 +38,4 @@ Exact models: `gpt-5.6-luna`, `gpt-6-luna`, `gpt-5.6-terra`, `gpt-6.1-terra`, `g
 7. Without explicit consent, only preview `study submit --file PATH`. After consent use `--publish`; never auto-merge. Existing consent for this exact report remains valid. Submission and trusted PR validation reject missing primary, pilot or control coverage.
 8. Never include API keys, auth headers, cookies, provider accounts, private logs or home paths. Inference origin and tool provenance are submitter-reported, not independent model attestation.
 
-The CLI provides the plan, grading, progress checks and submission. The agent must actually invoke all configured models; CLI inspection alone does not run inference. If you cannot invoke them, say BLOCKED rather than claim an audit ran.
+The CLI provides the plan, grading, progress and submission. The optional `pi-trial` adapter executes and records one isolated slot; the agent must loop through all configured models. CLI inspection alone does not run inference. If you cannot invoke them, say BLOCKED rather than claim an audit ran.

@@ -30,7 +30,17 @@ A user may explicitly request a narrow smoke test (for example, two real tasks) 
 5. Run `python3 -m teobench campaign status --file local-runs/study.json`. Primary coverage must show 1050/1050 and 35 complete conditions; the full original protocol is 1127/1127 including pilot/control trials. An unfinished checkpoint is not a completed campaign.
 6. Validate answers, summarize all 35 primary conditions, show the public-data preview and ask whether to contribute. After consent `study submit --file ... --publish` creates a PR. Trusted GitHub validation rejects incomplete primary, pilot or control coverage. Earlier accepted primary-only studies remain readable; they are not evidence of a new full-protocol run.
 
-Use up to 4 concurrent trials, at most one per model, at least 4 seconds between request starts globally, and 240-second trial timeouts. For Responses-style streams, follow the [terminal-event transport contract and opt-in collector](STREAMING_TRANSPORT.md): completion is not HTTP EOF, and partial output must survive failures without becoming a successful answer. Do not provide references to the evaluated model. Preserve model/tool/token settings in `method`. API/model access is supplied by the participant, not by TeoBench. There is no universal provider runner bundled in this release: the agent executes the plan through its configured interfaces. If it cannot, the result is BLOCKED, not successful research.
+Use up to 4 concurrent trials, at most one per model, at least 4 seconds between request starts globally, and 240-second trial timeouts. For Responses-style streams, follow the [terminal-event transport contract and opt-in collector](STREAMING_TRANSPORT.md): completion is not HTTP EOF, and partial output must survive failures without becoming a successful answer. Do not provide references to the evaluated model. Preserve model/tool/token settings in `method`. API/model access is supplied by the participant, not by TeoBench. The optional `pi-trial` adapter executes one isolated Pi trial; the agent still coordinates the full plan. Other transports are not automatically standardized. If it cannot, the result is BLOCKED, not successful research.
+
+## Clean evaluated-model context
+
+New studies use [pi-clean-v1](ISOLATED_INFERENCE.md). Your current Codex/Pi/other
+agent is the orchestrator; evaluated models must not inherit its instructions,
+skills, extensions or conversation. Create a separate checkpoint using
+`study create --execution-profile pi-clean-v1`, preflight every condition, and
+execute `pi-trial --study ...` for each exact next slot. The profile/route
+fingerprints separate these results from historical personalized runs. Never
+silently fall back when clean execution is unavailable.
 
 ## Existing clones
 
