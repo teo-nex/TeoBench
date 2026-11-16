@@ -32,19 +32,13 @@ class CodexPolicyTests(unittest.TestCase):
                 self.assertEqual(run.call_args.args[0],[str(binary.resolve()),'--version'])
                 self.assertNotIn('shell',run.call_args.kwargs)
 
-    def test_missing_pi_selects_installed_codex_without_installing(self):
+    def test_auto_does_not_depend_on_installed_clients(self):
         from teobench.cli import execution_profile
-        with patch('teobench.pi_runner.package_path', side_effect=ValueError('absent')), \
-                patch('teobench.codex_runner.executable', return_value=Path('/synthetic/codex')) as check:
-            self.assertEqual(execution_profile('auto'),'codex-clean-v1')
-            check.assert_called_once_with()
-
-    def test_available_pi_stays_selected(self):
-        from teobench.cli import execution_profile
-        with patch('teobench.pi_runner.package_path', return_value=Path('/synthetic/pi')), \
-                patch('teobench.pi_runner.shutil.which', return_value='node'), \
-                patch('teobench.codex_runner.executable', side_effect=AssertionError('must not select Codex')):
-            self.assertEqual(execution_profile('auto'),'pi-clean-v1')
+        with patch('teobench.pi_runner.package_path', side_effect=AssertionError('must not discover Pi')), \
+                patch('teobench.codex_runner.executable', side_effect=AssertionError('must not discover Codex')):
+            self.assertEqual(execution_profile('auto'), 'responses-clean-v1')
+            self.assertEqual(execution_profile('codex-clean-v1'), 'codex-clean-v1')
+            self.assertEqual(execution_profile('pi-clean-v1'), 'pi-clean-v1')
 
     def test_chatgpt_selection_never_falls_back_to_api_billing(self):
         with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {'OPENAI_API_KEY':'synthetic-api-key'}):

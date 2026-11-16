@@ -1,5 +1,11 @@
 # Run the full Easy-Bench study
 
+> Current default: `responses-clean-v1` / `responses-trial` uses Python and an explicit
+> Responses gateway, with no Codex CLI or Pi dependency. See [Responses adapter](RESPONSES_ADAPTER.md).
+> The pinned Pi/Codex instructions below apply only when those legacy profiles
+> are explicitly selected; `auto` no longer discovers installed clients.
+
+
 The default research is **7 models × 5 reasoning efforts × 30 unchanged tasks = 1050 primary trials**, not a single 30-task run. The authoritative machine-readable configuration is [campaign.json](../Easy-Bench/campaign.json).
 
 | Model | Required effort settings | Primary trials |
@@ -34,15 +40,12 @@ Use up to 4 concurrent trials, at most one per model, at least 4 seconds between
 
 ## Clean evaluated-model context
 
-New studies use [clean inference](ISOLATED_INFERENCE.md). Your current Codex/Pi/other
-agent is the orchestrator; evaluated models must not inherit its instructions,
-skills, extensions or conversation. Create a separate checkpoint using
-`study create --execution-profile auto`: installed Pi is preferred; otherwise use
-[disposable Codex](CODEX_FALLBACK.md). Preflight every condition, and execute the
-returned `trial_command` (`pi-trial` or `codex-trial`) with `--study ...` for each
-exact next slot. Keep the selected adapter throughout the checkpoint. The profile/route
-fingerprints separate these results from historical personalized runs. Never
-silently fall back when clean execution is unavailable.
+New studies use [client-independent Responses](RESPONSES_ADAPTER.md). Create a
+separate checkpoint with `study create --execution-profile auto`, preflight all
+35 conditions, and execute the returned `responses-trial` command for each next
+slot. Supply explicit subscription-provider routes and gateway authentication.
+Never silently switch transports/profiles within a checkpoint. Explicit legacy
+Pi/Codex profiles retain their pinned clients and original method fingerprints.
 
 ## Existing clones
 

@@ -1,5 +1,11 @@
 # Setup by operating system
 
+> Current default: `responses-clean-v1` / `responses-trial` uses Python and an explicit
+> Responses gateway, with no Codex CLI or Pi dependency. See [Responses adapter](RESPONSES_ADAPTER.md).
+> The pinned Pi/Codex instructions below apply only when those legacy profiles
+> are explicitly selected; `auto` no longer discovers installed clients.
+
+
 The agent first detects the OS, reuses installed Python 3.9+ and reads this page. There is no pip dependency or platform-specific model installation. All inference still requires the participant's configured model interfaces and access to the full campaign. Do not install another model, replace model IDs, or change the host's network/security settings to make a grading probe pass.
 
 | Host | CLI | Python-answer sandbox | Preflight |
