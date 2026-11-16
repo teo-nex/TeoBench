@@ -54,16 +54,7 @@ def emit(value):
 def execution_profile(name):
     """Choose once for a new study, never switch runners halfway through it."""
     if name == 'auto':
-        from . import pi_runner
-        try:
-            pi_runner.package_path()
-            if not pi_runner.shutil.which('node'):
-                raise ValueError('Node is unavailable')
-            name = 'pi-clean-v1'
-        except (ValueError, OSError):
-            from .codex_runner import executable
-            executable()
-            name = 'codex-clean-v1'
+        name = 'responses-clean-v1'
     return name
 
 
@@ -95,7 +86,7 @@ def main(argv=None):
     create.add_argument("--access-route", required=True, help="provider/gateway route, without credentials")
     create.add_argument("--environment", required=True, help="OS/runtime and relevant tool settings; no host/user names")
     create.add_argument("--campaign-profile", help="explicit trusted campaign profile; creates schema 1.1")
-    create.add_argument("--execution-profile", choices=["auto", "pi-clean-v1", "codex-clean-v1"], help="separate standardized inference cohort; auto prefers installed Pi, then Codex")
+    create.add_argument("--execution-profile", choices=["auto", "responses-clean-v1", "pi-clean-v1", "codex-clean-v1"], help="separate standardized inference cohort; auto selects client-independent Responses")
     record = actions.add_parser("record")
     record.add_argument("--file", type=Path, required=True)
     record.add_argument("--task", required=True)
@@ -149,12 +140,28 @@ def main(argv=None):
     codex.add_argument('--study', type=Path)
     codex.add_argument('--replicate', type=int, default=0)
     codex.add_argument('--preflight', action='store_true')
+    responses = sub.add_parser('responses-trial', help='stateless Responses gateway trial; no Codex or Pi required')
+    responses.add_argument('--task', required=True)
+    responses.add_argument('--model', required=True)
+    responses.add_argument('--effort', required=True)
+    responses.add_argument('--provider', default='gateway', choices=['gateway'])
+    responses.add_argument('--transport', type=Path, required=True)
+    responses.add_argument('--key-env', default='TEOBENCH_GATEWAY_KEY')
+    responses.add_argument('--output', type=Path, required=True)
+    responses.add_argument('--study', type=Path)
+    responses.add_argument('--replicate', type=int, default=0)
+    responses.add_argument('--preflight', action='store_true')
+    responses.set_defaults(auth_file=None)
     args = parser.parse_args(argv)
     try:
-        if args.command in ("pi-trial", "codex-trial"):
+        if args.command in ("pi-trial", "codex-trial", "responses-trial"):
             if args.command == 'pi-trial':
                 from . import pi_runner as runner
                 options = {'pi_package':args.pi_package}
+                route_options = {}
+            elif args.command == 'responses-trial':
+                from . import responses_runner as runner
+                options = {'key_env':args.key_env}
                 route_options = {}
             else:
                 from . import codex_runner as runner
@@ -237,6 +244,8 @@ def main(argv=None):
                         selected = execution_profile(args.execution_profile)
                         if selected == 'pi-clean-v1':
                             from .pi_runner import mark_study
+                        elif selected == 'responses-clean-v1':
+                            from .responses_runner import mark_study
                         else:
                             from .codex_runner import mark_study
                         mark_study(value)
@@ -244,7 +253,7 @@ def main(argv=None):
                     studies.save(args.file, value)
                 created = {"created": str(args.file), "records": 0}
                 if args.execution_profile:
-                    created.update(execution_profile=selected, trial_command='pi-trial' if selected=='pi-clean-v1' else 'codex-trial')
+                    created.update(execution_profile=selected, trial_command={'pi-clean-v1':'pi-trial', 'codex-clean-v1':'codex-trial', 'responses-clean-v1':'responses-trial'}[selected])
                 emit(created)
             elif args.action == "record":
                 history = studies.load_json(args.history) if args.history else []

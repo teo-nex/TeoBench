@@ -1,5 +1,11 @@
 # TeoBench
 
+> Current default: `responses-clean-v1` / `responses-trial` uses Python and an explicit
+> Responses gateway, with no Codex CLI or Pi dependency. See [Responses adapter](docs/RESPONSES_ADAPTER.md).
+> The pinned Pi/Codex instructions below apply only when those legacy profiles
+> are explicitly selected; `auto` no longer discovers installed clients.
+
+
 **English** · [Русский](README.ru.md)
 
 An open benchmark for evaluating model reasoning and collecting reproducible community studies.
@@ -28,7 +34,13 @@ RUN_TEO_BENCH: execute RUN_RESEARCH.md in https://github.com/teo-nex/TeoBench no
 
 See the [execution task](RUN_RESEARCH.md). A read-only client or missing model access must be reported as BLOCKED; cloning the repository does not grant those permissions.
 
-New studies use **[isolated execution](docs/ISOLATED_INFERENCE.md)**: `study create --execution-profile auto` selects installed Pi first, otherwise a [temporary clean Codex home](docs/CODEX_FALLBACK.md). Each evaluated model gets fixed instructions without personal settings, skills or conversation. Temporary Codex profiles are deleted after each trial; results remain. The agent repeats the selected adapter through the full campaign. Pi, Codex and historical studies retain separate method fingerprints.
+New studies use the client-independent **[Responses adapter](docs/RESPONSES_ADAPTER.md)**.
+`study create --execution-profile auto` selects `responses-clean-v1`, which uses
+Python and an explicit gateway. Route subscription runs to the gateway's existing
+subscription provider; no Codex CLI, Pi, personal instructions or conversation is
+loaded. Legacy client profiles remain explicit separate cohorts. The agent
+repeats `responses-trial` for every campaign slot. Missing gateway/model access
+is BLOCKED; API billing is never enabled automatically.
 
 ## Quick start
 

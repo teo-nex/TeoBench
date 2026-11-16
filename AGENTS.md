@@ -6,19 +6,19 @@ When the user says **`RUN_TEO_BENCH`** or asks to execute **`RUN_RESEARCH.md`**,
 
 ## Standardized inference — isolate the evaluated model
 
-For NEW studies, use [clean inference](docs/ISOLATED_INFERENCE.md). Create a NEW
-checkpoint with `study create --execution-profile auto`: reuse installed Pi
-0.85.1/Node first; otherwise use installed native Codex CLI 0.166.0 with a
-[disposable clean home](docs/CODEX_FALLBACK.md). Read the returned
-`execution_profile` and `trial_command`, and use that adapter throughout the
-study. Never install a client or change the participant's settings automatically.
-Your current agent may orchestrate, but must never answer the tasks itself or
-forward personal instructions/history to test subjects. Missing model access or
-both clients means BLOCKED. Do not silently switch adapters within a checkpoint.
-Preflight all 35 exact model/effort conditions without model inference. Invoke
-the selected `pi-trial --study ...` or `codex-trial --study ...` for the exact
-`campaign next` slot through all 1127 trials. Codex defaults to existing ChatGPT
-sign-in; never enable API billing without explicit authorization.
+For NEW studies, `study create --execution-profile auto` selects the
+client-independent `responses-clean-v1` adapter. Read
+[RESPONSES_ADAPTER.md](docs/RESPONSES_ADAPTER.md). Supply an explicit existing
+Responses gateway route and gateway-key environment variable. Subscription runs
+must use the configured subscription provider routing IDs, never ambiguous bare
+aliases or an implicit paid API fallback. No Codex CLI, Pi or Node is required.
+The adapter sends only the frozen prompt, public task and declared lookup tool.
+Your current agent orchestrates and never answers tasks or supplies personal
+context. Preflight all 35 exact model/effort conditions, then invoke
+`responses-trial --study ...` for each exact next campaign slot through all 1127
+trials. Missing gateway/model access is BLOCKED. Never silently switch profiles
+or transports within a checkpoint. Explicit legacy Pi/Codex profiles retain
+their original pinned clients and fingerprints; do not rewrite old receipts.
 Do not overwrite existing trial outputs. Recover a saved original receipt after
 an interruption/grader failure; do not rerun its model request. The adapter
 checks the clean context, provider/model/effort, binds the route and records each

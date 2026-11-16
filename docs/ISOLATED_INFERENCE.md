@@ -1,18 +1,20 @@
 # Clean inference profiles
 
+> Current default: `responses-clean-v1` / `responses-trial` uses Python and an explicit
+> Responses gateway, with no Codex CLI or Pi dependency. See [Responses adapter](RESPONSES_ADAPTER.md).
+> The pinned Pi/Codex instructions below apply only when those legacy profiles
+> are explicitly selected; `auto` no longer discovers installed clients.
+
+
 The user's current agent is the **orchestrator**, not the test subject. Its personal
 instructions must never be passed to the evaluated model. A fresh conversation
 alone does not remove global configuration, skills, extensions or context files.
 
-For new studies, `study create --execution-profile auto` selects installed Pi
-0.85.1/Node (`pi-clean-v1`) first. If unavailable, it selects installed native
-Codex CLI 0.166.0 with a [disposable clean home](CODEX_FALLBACK.md)
-(`codex-clean-v1`). The command returns `execution_profile` and `trial_command`;
-use that adapter for the whole checkpoint. Neither client is installed
-automatically. Missing both clients or required model access is `BLOCKED`.
-The Pi protocol is below; the Codex protocol is in [CODEX_FALLBACK.md](CODEX_FALLBACK.md).
-Offline grading, accepted studies and frozen tasks remain unchanged. Historical
-studies retain their original methods; they are not retroactively certified clean.
+For new studies, `auto` selects [client-independent Responses](RESPONSES_ADAPTER.md),
+with Python and an explicitly configured gateway. Codex CLI and Pi are optional
+legacy adapters only. The Pi protocol below applies to an explicit
+`--execution-profile pi-clean-v1`; the Codex protocol requires an explicit
+`--execution-profile codex-clean-v1`. New and historical methods remain distinct.
 
 ## Requirements and boundary
 

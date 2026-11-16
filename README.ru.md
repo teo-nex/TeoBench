@@ -1,5 +1,11 @@
 # TeoBench
 
+> Current default: `responses-clean-v1` / `responses-trial` uses Python and an explicit
+> Responses gateway, with no Codex CLI or Pi dependency. See [Responses adapter](docs/RESPONSES_ADAPTER.md).
+> The pinned Pi/Codex instructions below apply only when those legacy profiles
+> are explicitly selected; `auto` no longer discovers installed clients.
+
+
 [English](README.md) · **Русский**
 
 Открытый набор для проверки reasoning моделей и сбора воспроизводимых исследований сообщества.
