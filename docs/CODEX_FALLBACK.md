@@ -8,9 +8,9 @@
 
 If compatible Pi/Node is unavailable, reuse **native Codex CLI 0.166.0** already
 installed by the participant. Do not install another client or reuse the
-orchestrator's conversation. `study create --execution-profile auto` selects
-Pi first, then Codex, and returns the selected `trial_command`. Explicit
-`--execution-profile codex-clean-v1` is also supported. Keep one adapter and
+orchestrator's conversation. Select this legacy adapter explicitly with
+`--execution-profile codex-clean-v1`. `auto` now selects the client-independent
+Responses adapter instead. Keep one adapter and
 authentication/transport route throughout a checkpoint; switching requires a
 separate study.
 

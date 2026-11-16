@@ -44,7 +44,7 @@ is BLOCKED; API billing is never enabled automatically.
 
 ## Quick start
 
-Python 3.9+ and the standard library run offline grading; no Python packages or API keys are required for those commands. Optional inference reuses installed Node/Pi or native Codex and existing authentication; clients are not installed automatically. Python and SQL grading additionally require an OS sandbox:
+Python 3.9+ and the standard library run offline grading; no Python packages or API keys are required for those commands. Inference uses an explicitly configured Responses gateway and existing authentication; no model CLI installation is required. Python and SQL grading additionally require an OS sandbox:
 
 - **macOS:** built-in Seatbelt and Python outside `/Users` and `/Volumes`, with automatic fallback to an existing local Docker Linux engine when Seatbelt setup is denied. Run `python3 -m teobench doctor --prepare` before model requests; Docker is unnecessary when Seatbelt works.
 - **Windows 10/11:** native Windows Python plus a running [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) Linux engine. Run `py -3 -m teobench doctor --prepare` once to fetch the pinned official Python image. No WSL command, Bash, `resource` module or POSIX path is required in the Windows CLI.

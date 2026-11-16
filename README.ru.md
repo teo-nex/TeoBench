@@ -1,9 +1,9 @@
 # TeoBench
 
-> Current default: `responses-clean-v1` / `responses-trial` uses Python and an explicit
-> Responses gateway, with no Codex CLI or Pi dependency. See [Responses adapter](docs/RESPONSES_ADAPTER.md).
-> The pinned Pi/Codex instructions below apply only when those legacy profiles
-> are explicitly selected; `auto` no longer discovers installed clients.
+> Новый стандарт: `responses-clean-v1` / `responses-trial` работает через явно
+> выбранный Responses-шлюз. Нужен только Python; Codex CLI и Pi не требуются.
+> [Настройка адаптера](docs/RESPONSES_ADAPTER.md).
+
 
 
 [English](README.md) · **Русский**
@@ -34,11 +34,11 @@ RUN_TEO_BENCH: выполни RUN_RESEARCH.md в https://github.com/teo-nex/TeoB
 
 [Задание на выполнение](RUN_RESEARCH.md) требует реальных модельных вызовов. Режим только для чтения или отсутствие доступа к моделям означает BLOCKED: сам репозиторий не может выдать клиенту эти права.
 
-Новые исследования используют **[изолированный запуск](docs/ISOLATED_INFERENCE.md)**: `study create --execution-profile auto` выбирает установленный Pi, а при его отсутствии — [временный чистый профиль Codex](docs/CODEX_FALLBACK.md). Модель получает фиксированные инструкции без личных настроек, skills и истории. Временный профиль Codex удаляется после каждой попытки, результаты сохраняются. Агент повторяет выбранную команду до завершения кампании. Pi, Codex и старые исследования имеют отдельные отпечатки методики.
+Новые исследования используют **[изолированный Responses-адаптер](docs/RESPONSES_ADAPTER.md)**: `study create --execution-profile auto` выбирает `responses-clean-v1`. Адаптер работает на стандартной библиотеке Python без Codex CLI, Pi, личных настроек, skills и истории. Для подписки явно задаётся маршрут к подписочному провайдеру существующего шлюза. Автоматического перехода на платный API нет. Старые Pi/Codex-профили доступны по явному выбору и сохраняют отдельные отпечатки методики.
 
 ## Быстрый старт
 
-Офлайн-проверка работает на Python 3.9+ со стандартной библиотекой; пакеты Python и ключи API для неё не нужны. Запросы к моделям используют установленный Node/Pi или Codex и существующий вход; клиенты автоматически не устанавливаются. Для проверки Python и SQL дополнительно требуется системная изоляция:
+Офлайн-проверка работает на Python 3.9+ со стандартной библиотекой; пакеты Python и ключи API для неё не нужны. Запросы к моделям идут через явно настроенный Responses-шлюз и существующий подписочный доступ; устанавливать модельный CLI не требуется. Для проверки Python и SQL дополнительно требуется системная изоляция:
 
 - **macOS:** встроенный Seatbelt и Python вне `/Users` и `/Volumes`. При отказе Seatbelt автоматически используется уже работающий локальный Docker с Linux engine. До запросов к моделям выполните `python3 -m teobench doctor --prepare`; при работающем Seatbelt Docker не нужен.
 - **Windows 10/11:** обычный Windows Python и работающий [Docker Desktop](https://docs.docker.com/desktop/setup/install/windows-install/) с Linux engine. Один раз выполните `py -3 -m teobench doctor --prepare`, чтобы получить закреплённый официальный образ Python. Windows CLI не требует Bash, WSL-команд и модуля `resource`.
