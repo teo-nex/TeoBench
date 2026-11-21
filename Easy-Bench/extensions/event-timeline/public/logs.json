@@ -1,0 +1,17 @@
+{
+  "clock_corrections_seconds": {"gateway": 0, "worker-east": -2, "worker-west": 3},
+  "events": [
+    {"trace_id": "tr-52", "kind": "response", "service": "worker-east", "event_id": "e-08", "revision": 2, "at": "2026-11-16T05:30:02+05:30", "code": 503},
+    {"trace_id": "tr-52", "kind": "start", "service": "gateway", "attempt_id": "a-2", "at": "2026-11-16T00:00:00Z"},
+    {"trace_id": "tr-52", "kind": "response", "service": "worker-west", "event_id": "e-09", "revision": 1, "at": "2026-11-15T20:29:56-03:30", "code": 429},
+    {"trace_id": "tr-52", "kind": "response", "service": "worker-east", "event_id": "e-08", "revision": 1, "at": "2026-11-16T05:30:01+05:30", "code": 500},
+    {"trace_id": "tr-52", "kind": "response", "service": "worker-east", "event_id": "e-03", "revision": 1, "at": "2026-11-16T05:30:01+05:30", "code": 202},
+    {"trace_id": "tr-52", "kind": "start", "service": "gateway", "attempt_id": "a-1", "at": "2026-11-16T05:29:57+05:30"},
+    {"trace_id": "tr-other", "kind": "response", "service": "worker-east", "event_id": "e-08", "revision": 3, "at": "2026-11-16T05:30:02+05:30", "code": 200},
+    {"trace_id": "tr-52", "kind": "response", "service": "worker-west", "event_id": "e-01", "revision": 1, "at": "2026-11-15T20:29:53-03:30", "code": 504},
+    {"trace_id": "tr-52", "kind": "start", "service": "gateway", "attempt_id": "a-3", "at": "2026-11-15T20:30:03-03:30"},
+    {"trace_id": "tr-52", "kind": "response", "service": "worker-west", "event_id": "e-06", "revision": 1, "at": "2026-11-15T20:29:57-03:30", "code": 204},
+    {"trace_id": "tr-other", "kind": "start", "service": "gateway", "attempt_id": "b-1", "at": "2026-11-15T23:59:58Z"},
+    {"trace_id": "tr-52", "kind": "diagnostic", "service": "worker-west", "event_id": "d-01", "at": "2026-11-15T20:29:59-03:30"}
+  ]
+}
