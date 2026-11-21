@@ -1,0 +1,206 @@
+{
+  "run_id": "private-gateway-20261115",
+  "collected": "2026-11-15",
+  "teobench_upstream_commit_regraded": "a62d4eb55d63ef14998a52264b9f0a8e1f47e40b",
+  "teobench_tasks_sha256": "b43eed73570506edfa73940174a6e2a0dbc4b384eda43978f331dc5d93445c7b",
+  "teobench_acceptance_sha256": "7e84abec90ca238b753e729cb48685e31ba44b733faa4391ec59ebd6e98d8f82",
+  "teobench_grader_sha256": "39e47321f929e0f2b113ca1fe135546d0cdd0e6d40efccb2af08a13cba0c5fb3",
+  "teobench_regrade": {
+    "records": 1890,
+    "regraded": 1879,
+    "mismatches": 0,
+    "note": "one sandbox SSH reset during regrade was rerun; the rerun matched the stored grade"
+  },
+  "objective_workbench_source_sha256": {
+    "cli.py": "d44785dc321bc28a3615d3e289b39cbb922825dc0a27775b54af4bf7fafb3571",
+    "artifact_tasks.py": "9523b891ad783c7f11882354d81c660e217d68d73b7e7dc14203fda5015c23de",
+    "answer_tasks.py": "a6c285676ce53269643a2564a2a0b992c888de473270bb5d52f2f3f375f85b75",
+    "bench.py": "4eba855e3553f70292da6d308ac725d3e4aebaffcfa51781b60afc5344a45a12",
+    "validate.py": "168f4594b0cf90e393ba58f099eb6ae03e6cd5f1fb5e342c85648b315f28a81f"
+  },
+  "objective_regrade": {
+    "records": 3240,
+    "regraded": 3240,
+    "mismatches": 0
+  },
+  "adapter": "custom direct-API agent loop; NOT the official responses-clean-v1 / Pi / Codex study profile",
+  "access_route": "private multi-provider subscription gateway (OpenAI Chat Completions for GPT/GLM/Nemotron, Anthropic Messages for Claude); no credentials published",
+  "models_and_efforts": [
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "low"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "high"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "xhigh"
+    },
+    {
+      "model": "gpt-6.1-sol",
+      "effort": "max"
+    },
+    {
+      "model": "gpt-6.1-terra",
+      "effort": "low"
+    },
+    {
+      "model": "gpt-6.1-terra",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6.1-terra",
+      "effort": "high"
+    },
+    {
+      "model": "gpt-6.1-terra",
+      "effort": "xhigh"
+    },
+    {
+      "model": "gpt-6.1-terra",
+      "effort": "max"
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "low"
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "medium"
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "high"
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "xhigh"
+    },
+    {
+      "model": "gpt-6-luna",
+      "effort": "max"
+    },
+    {
+      "model": "claude-opus-5-5",
+      "effort": "low"
+    },
+    {
+      "model": "claude-opus-5-5",
+      "effort": "medium"
+    },
+    {
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    },
+    {
+      "model": "claude-opus-5-5",
+      "effort": "xhigh"
+    },
+    {
+      "model": "claude-opus-5-5",
+      "effort": "max"
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "effort": "low"
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "effort": "medium"
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "effort": "high"
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "effort": "xhigh"
+    },
+    {
+      "model": "claude-sonnet-5-5",
+      "effort": "max"
+    },
+    {
+      "model": "claude-haiku-5-5",
+      "effort": "low"
+    },
+    {
+      "model": "claude-haiku-5-5",
+      "effort": "medium"
+    },
+    {
+      "model": "claude-haiku-5-5",
+      "effort": "high"
+    },
+    {
+      "model": "claude-haiku-5-5",
+      "effort": "xhigh"
+    },
+    {
+      "model": "claude-haiku-5-5",
+      "effort": "max"
+    },
+    {
+      "model": "glm-5.3-flash",
+      "effort": "low"
+    },
+    {
+      "model": "glm-5.3-flash",
+      "effort": "medium"
+    },
+    {
+      "model": "glm-5.3-flash",
+      "effort": "high"
+    },
+    {
+      "model": "glm-5.3-flash",
+      "effort": "max"
+    },
+    {
+      "model": "nemotron-ultra-free",
+      "effort": "full-thinking"
+    },
+    {
+      "model": "nemotron-3.5-super-vl",
+      "effort": "full-thinking"
+    }
+  ],
+  "limits": {
+    "timeout_s": 240,
+    "max_tokens_per_call": 18000,
+    "max_model_calls_per_trial": 10,
+    "global_start_gap_s": 4,
+    "automatic_retries": 0
+  },
+  "repeats": 3,
+  "objective_seeds": [
+    11,
+    29,
+    47
+  ],
+  "files": {
+    "teobench-records.jsonl.gz": {
+      "sha256": "062abc9347c5f07877760b59ad34a15b5697c87d831c25135f65ec46cfa71c75",
+      "uncompressed_sha256": "4ea81436c424af75eba5c5d7b43c1ccb4ee8d4765bd5bcc2a4cd8331c0a81bb3",
+      "records": 1911
+    },
+    "objective-workbench-records.jsonl.gz": {
+      "sha256": "856f878a5ac16ea87ab4ae2a90cd38ab7d838909c03101b9f8917d6a175a732f",
+      "uncompressed_sha256": "98837a98c71ceca367a83aa596fa23f62435366e1c2bf1629026ea17cd5f74f6",
+      "records": 3247
+    },
+    "objective-workbench-final-files.jsonl.gz": {
+      "sha256": "fb6fe91e1da593a6287f0a2ccf607e770263d9d1703d42e8de1ffd685d666702",
+      "uncompressed_sha256": "da8a3008f9409f70c7cc11f8ccf0d7786ec02cf1449b99d8e0cc198ac44be388",
+      "records": 1296
+    }
+  },
+  "teobench_scope": "only models absent from Easy-Bench/statistics at a62d4eb; GPT conditions from the same run are omitted here",
+  "not_a_study_json": true
+}
