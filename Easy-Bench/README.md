@@ -9,6 +9,7 @@
 | [tasks](tasks) | `tasks.jsonl`, публичные эталоны `answers.json`, исходный manifest и генератор |
 | [studies](studies) | Принятые исследования: `<study-id>/study.json` |
 | [statistics](statistics) | Статистика полных запусков сообщества |
+| [extensions/event-timeline](extensions/event-timeline) | Дополнительная задача Easy на восстановление цепочки событий из логов. Оценивается отдельно от основной кампании |
 | [research-2026-11-03](research-2026-11-03) | Исправленные и исходные оценки первого исследования |
 
 По шесть задач `R01–R06`, `C01–C06`, `S01–S06`, `D01–D06`, `T01–T06`. Просмотр: `python3 -m teobench show R01` из корня проекта. Каталог всех формулировок: [TASKS.md](TASKS.md).

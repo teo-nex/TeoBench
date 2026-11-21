@@ -1,0 +1,25 @@
+{
+  "attempts": [
+    {
+      "attempt_id": "a-1",
+      "started_at_utc": "2026-11-15T23:59:57Z",
+      "responses": [
+        {"event_id": "e-03", "at_utc": "2026-11-15T23:59:59Z", "code": 202},
+        {"event_id": "e-09", "at_utc": "2026-11-15T23:59:59Z", "code": 429}
+      ]
+    },
+    {
+      "attempt_id": "a-2",
+      "started_at_utc": "2026-11-16T00:00:00Z",
+      "responses": [
+        {"event_id": "e-06", "at_utc": "2026-11-16T00:00:00Z", "code": 204},
+        {"event_id": "e-08", "at_utc": "2026-11-16T00:00:00Z", "code": 503}
+      ]
+    },
+    {
+      "attempt_id": "a-3",
+      "started_at_utc": "2026-11-16T00:00:03Z",
+      "responses": []
+    }
+  ]
+}
